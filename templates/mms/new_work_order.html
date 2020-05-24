@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    {% load static %}
+    <script src="{% static 'mms/jquery-3.5.1.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    {% load static %}
+    <script src="{% static 'mms/leaflet.js' %}"></script>
+    {% load static %}
+    <link href="{% static 'mms/bootstrap.min.css' %}" type="text/css" rel="stylesheet" />
+    {% load static %}
+    <script src="{% static 'mms/bootstrap.min.js' %}"></script>
+    {% load static %}
+    <link href="{% static 'mms/leaflet.css' %}" type="text/css" rel="stylesheet" />
+    {% load static %}
+    <link href="{% static 'mms/common.css' %}" type="text/css" rel="stylesheet" />
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <a class="navbar-brand" href="#">ODOT MMS</a>
+        <div class="navbar-nav mr-auto">
+            <a class="nav-item nav-link" href="#">My Open Work Orders</a>
+            <a class="nav-item nav-link" href="#">Recently Closed Work Orders</a>
+            <a class="nav-item nav-link" href="#">Search for a Work Order</a>
+        </div>
+        <form class="form-inline">
+            <button class="btn btn-success" type="button">+ Work Order</button>
+        </form>
+    </nav>
+    <div class="container d-flex align-items-center flex-column ">
+        <div class="container border border-dark rounded" style="margin-top:15px;padding-top:15px;padding-bottom: 15px;">
+            <div class="bg-secondary text-light slight-inset" id="secHeader"><h2>Work Order Assets</h2></div>
+            <div class="bg-info slight-inset">
+                <div class="text-light">
+                    <a class="link-white" style="font-weight: bold;" href="#" id="link_woAssets" onclick="switchScreen(this)">
+                        WO Assets
+                    </a> >
+                    <a class="link-white" href="#" id="link_woDetails" onclick="switchScreen(this)">WO Details</a> >
+                    <a class="link-white" href="#" id="link_woLabor" onclick="switchScreen(this)">WO Labor</a> >
+                    <a class="link-white" href="#" id="link_woEquip" onclick="switchScreen(this)">WO Equip</a> >
+                    <a class="link-white" href="#" id="link_woMaterials" onclick="switchScreen(this)">WO Materials</a> >
+                    <a class="link-white" href="#" id="link_woOtherContract" onclick="switchScreen(this)">WO Other/Contract</a>
+                </div>
+            </div>
+            <form action= id="form1" onsubmit="return false;">
+                <div id="woAssets">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-sm-5 d-flex align-items-end flex-column">
+                                <div class="container" style="margin-top:15px;">
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <label for="assetType">
+                                                Choose type of asset to add:
+                                            </label>
+                                        </div>
+                                        <div class="col-sm-6 d-flex align-items-center">
+                                            <select id="assetType" onchange="assetTypeChange()">
+                                                <option value="roadway">Roadway</option>
+                                                <option value="culvert">Culvert</option>
+                                                <option value="barrier">Barrier</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <p id="zoomInfoText" class="zoomInfoText"></p>
+                                    </div>
+                                </div>
+                                <div class="container" id="entryContainer">
+
+                                </div>
+                                <div class="container" style="margin-top: 10px; margin-bottom: 10px; max-height: 300px; overflow: scroll;">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Type</th>
+                                                <th scope="col">ID</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="assetTableBody">
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="mt-auto">
+                                    <button type="button" class="btn btn-success" onclick="switchScreen($('#link_woDetails')[0])">Next</button>
+                                </div>
+                            </div>
+                            <div class="col-sm-7">
+                                <div id="mapid" style="height:500px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="woDetails" style="display: none;">
+                    <div id="woDetailsAccordion">
+                        <div class="card">
+                            <div class="card-header" id="hdrTCoreFunctionArea">
+                                <h5 class="mb-0">
+                                    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#bdyTCoreFunctionArea" id="titleTCoreFunctionArea">
+                                        Core Function Area
+                                    </button>
+                                </h5>
+                            </div>
+                            <div id="bdyTCoreFunctionArea" class="collapse show" data-parent="#woDetailsAccordion">
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header" id="hdrTCoreAsset">
+                                <h5 class="mb-0">
+                                    <button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#bdyTCoreAsset" id="titleTCoreAsset">
+                                        Asset
+                                    </button>
+                                </h5>
+                            </div>
+                            <div id="bdyTCoreAsset" class="collapse" data-parent="#woDetailsAccordion">
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header" id="hdrTCoreActivity">
+                                <h5 class="mb-0">
+                                    <button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#bdyTCoreActivity" id="titleTCoreActivity">
+                                        Activity
+                                    </button>
+                                </h5>
+                            </div>
+                            <div id="bdyTCoreActivity" class="collapse" data-parent="#woDetailsAccordion">
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header" id="hdrTCoreRepairType">
+                                <h5 class="mb-0">
+                                    <button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#bdyTCoreRepairType" id="titleTCoreRepairType">
+                                        Repair Type
+                                    </button>
+                                </h5>
+                            </div>
+                            <div id="bdyTCoreRepairType" class="collapse" data-parent="#woDetailsAccordion">
+                                Body
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="woLabor" style="display: none;">
+
+                </div>
+                <div id="woEquip" style="display: none;">
+
+                </div>
+                <div id="woMaterials" style="display: none;">
+
+                </div>
+                <div id="woOtherContract" style="display: none;">
+
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="templinearEntry" style="display: none;">
+        <div class="row">
+            <div class="col-6" futureid="lbl_linearID">
+            </div>
+            <div class="col-6">
+                <input type="hidden" id="linearLatBegin" />
+                <input type="hidden" id="linearLngBegin" />
+                <input type="hidden" id="linearLatEnd" />
+                <input type="hidden" id="linearLngEnd" />
+                <input futureid="linearID" type="text" /> <!-- id="linearID" -->
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-6">
+                    County Log Begin
+            </div>
+            <div class="col-6">
+                <input futureid="linearLogBegin" type="number" step=".01" /> <!-- id="linearLogBegin" -->
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-6">
+                    County Log End
+            </div>
+            <div class="col-6">
+                <input futureid="linearLogEnd" type="number" step=".01" /><!-- id="linearLogEnd"-->
+            </div>
+        </div>
+        <div class="row" style="margin-top:10px;">
+            <div class="col-6 d-flex justify-content-center">
+                <button type="button" class="btn btn-primary" onclick="addAsset()">Add Asset</button>
+            </div>
+            <div class="col-6 d-flex justify-content-center">
+                <button type="button" class="btn btn-danger" onclick="clearAsset()">Clear Asset</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" tabindex="-1" role="dialog" id="chooseLogpoint">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Replace Begin or End Logpoint?</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="modalLogpoint" />
+                    <input type="hidden" id="modalLat" />
+                    <input type="hidden" id="modalLng" />
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-6 d-flex justify-content-center">
+                                <button type="button" class="btn btn-primary" onclick="replaceBeginLogpoint()">Beginning Logpoint</button>
+                            </div>
+                            <div class="col-6 d-flex justify-content-center">
+                                <button type="button" class="btn btn-primary" onclick="replaceEndLogpoint()">Ending Logpoint</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--<div class="modal-footer">
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>-->
+            </div>
+        </div>
+    </div>
+
+    {% load static %}
+    <script src="{% static 'mms/new_work_order.js' %}"></script>
+</body>
+</html>

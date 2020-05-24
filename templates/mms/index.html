@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    {% load static %}
+    <script src="{% static 'mms/jquery-3.5.1.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    {% load static %}
+    <script src="{% static 'mms/leaflet.js' %}"></script>
+    {% load static %}
+    <link href="{% static 'mms/bootstrap.min.css' %}" type="text/css" rel="stylesheet" />
+    {% load static %}
+    <link href="{% static 'mms/leaflet.css' %}" type="text/css" rel="stylesheet" />
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <a class="navbar-brand" href="#">ODOT MMS</a>
+        <div class="navbar-nav mr-auto">
+            <a class="nav-item nav-link active" href="#">My Open Work Orders</a>
+            <a class="nav-item nav-link" href="#">Recently Closed Work Orders</a>
+            <a class="nav-item nav-link" href="#">Search for a Work Order</a>
+        </div>
+        <form class="form-inline">
+            <button class="btn btn-success">+ Work Order</button>
+        </form>
+    </nav>
+</body>
+</html>
