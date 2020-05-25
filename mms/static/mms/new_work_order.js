@@ -75,6 +75,108 @@ let tcoreStructure={};
 
 let assets=[];
 
+function woDetailsItemSelect(elem,tcoreLevel) {
+    if($(elem).attr("tcoreLevel")=="coreFunction"){
+        $("#woDetails #woDetailsNextDiv").remove();
+        $("#titleTCoreFunctionArea").text(`Core Function Area: ${tcoreLevel.coreFunc}`);
+        $("#grpTCoreAsset").empty();
+        Object.values(tcoreLevel.assets).forEach((asset,idx)=>{
+            let alreadyExists = $(`#grpTCoreAsset input[tcoreLevel="asset"][tcoreAsset="${asset.asset}"]`).length>0;
+            if(!alreadyExists){
+               $("#grpTCoreAsset").append(
+                   `<label class="btn btn-secondary" style='margin: 5px;'>`+
+                   `    <input name='grpTCoreAssetOption' id="grpTCoreAssetOption${idx.toString()}" type='radio' autocomplete='off' tcoreLevel="asset" tcoreCoreFunction="${tcoreLevel.coreFunc}" tcoreAsset="${asset.asset}" tcoreActivity="" tcoreRepair="" onchange="woDetailsItemSelect(this,tcoreStructure.coreFunctions['${tcoreLevel.coreFunc}'].assets['${asset.asset}'])">`+asset.asset +
+                   `</label>`
+               );
+            }
+        });
+        $("#titleTCoreFunctionArea").addClass("collapsed");
+        $("#bdyTCoreFunctionArea").removeClass("show");
+        $("#titleTCoreAsset").removeClass("collapsed");
+        $("#bdyTCoreAsset").addClass("show");
+        if(Object.values(tcoreLevel.assets).length==1) {
+            $("#grpTCoreAsset input").prop('checked',true);
+            $("#grpTCoreAsset input").change();
+            //woDetailsItemSelect($("#grpTCoreAsset input")[0],tcoreStructure.coreFunctions[tcoreLevel.coreFunc].assets[$("#grpTCoreAsset input").attr("tcoreAsset")]);
+        } else {
+            $("#titleTCoreAsset").text("Asset");
+            $("#titleTCoreActivity").text("Activity");
+            $("#titleTCoreRepairType").text("Repair Type");
+        }
+    } else if ($(elem).attr("tcoreLevel")=="asset") {
+        $("#woDetails #woDetailsNextDiv").remove();
+        $("#titleTCoreAsset").text(`Asset: ${tcoreLevel.asset}`);
+        $("#grpTCoreActivity").empty();
+        let coreFunc=$(elem).attr("tcoreCoreFunction");
+        let asset=$(elem).attr("tcoreAsset");
+        Object.values(tcoreLevel.activities).forEach((activity,idx)=>{
+            let alreadyExists = $(`#grpTCoreAsset input[tcoreLevel="activity"][tcoreActivity="${activity.activity}"]`).length>0;
+            if(!alreadyExists) {
+                $("#grpTCoreActivity").append(
+                    `<label class="btn btn-secondary" style='margin: 5px;'>` +
+                    `    <input name='grpTCoreActivityOption' id="grpTCoreActivityOption${idx.toString()}" type='radio' autocomplete='off' tcoreLevel="activity" tcoreCoreFunction="${coreFunc}" tcoreAsset="${asset}" tcoreActivity="${activity.activity}" tcoreRepair="" onchange="woDetailsItemSelect(this,tcoreStructure.coreFunctions['${coreFunc}'].assets['${asset}'].activities['${activity.activity}'])">` + activity.activity +
+                    `</label>`
+                );
+            }
+        });
+        $("#titleTCoreAsset").addClass("collapsed");
+        $("#bdyTCoreAsset").removeClass("show");
+        $("#titleTCoreActivity").removeClass("collapsed");
+        $("#bdyTCoreActivity").addClass("show");
+        if(Object.values(tcoreLevel.activities).length==1) {
+            $("#grpTCoreActivity input").prop('checked',true);
+            $("#grpTCoreActivity input").change();
+            //woDetailsItemSelect($("#grpTCoreActivity input")[0],tcoreStructure.coreFunctions[coreFunc].assets[asset].activities[$("#grpTCoreActivity input").attr("tcoreActivity")]);
+        } else {
+            $("#titleTCoreActivity").text("Activity");
+            $("#titleTCoreRepairType").text("Repair Type");
+        }
+    } else if ($(elem).attr("tcoreLevel")=="activity") {
+        $("#woDetails #woDetailsNextDiv").remove();
+        $("#titleTCoreActivity").text(`Activity: ${tcoreLevel.activity}`);
+        $("#grpTCoreRepairType").empty();
+        let coreFunc=$(elem).attr("tcoreCoreFunction");
+        let asset=$(elem).attr("tcoreAsset");
+        let activity=$(elem).attr("tcoreActivity");
+        Object.values(tcoreLevel.repairs).forEach((repair,idx)=>{
+            let alreadyExists = $(`#grpTCoreRepairType input[tcoreLevel="repair"][tcoreRepair="${repair.repair}"]`).length>0;
+            if(!alreadyExists) {
+                $("#grpTCoreRepairType").append(
+                    `<label class="btn btn-secondary" style='margin: 5px;'>` +
+                    `    <input name='grpTCoreRepairTypeOption' id="grpTCoreRepairTypeOption${idx.toString()}" type='radio' autocomplete='off' tcoreLevel="repair" tcoreCoreFunc="${coreFunc}" tcoreAsset="${asset}" tcoreActivity="${activity}" tcoreRepair="${repair.repair}" onchange="woDetailsItemSelect(this,tcoreStructure.coreFunctions['${coreFunc}'].assets['${asset}'].activities['${activity}'].repairs['${repair.repair}'])">` + repair.repair +
+                    `</label>`
+                );
+            }
+        });
+        $("#titleTCoreActivity").addClass("collapsed");
+        $("#bdyTCoreActivity").removeClass("show");
+        $("#titleTCoreRepairType").removeClass("collapsed");
+        $("#bdyTCoreRepairType").addClass("show");
+        if(Object.values(tcoreLevel.repairs).length==1) {
+            $("#grpTCoreRepairType input").prop('checked',true);
+            $("#grpTCoreRepairType input").trigger('change');
+        } else {
+            $("#titleTCoreRepairType").text("Repair Type");
+        }
+    } else if ($(elem).attr("tcoreLevel")=="repair") {
+        $("#titleTCoreRepairType").text(`Repair Type: ${tcoreLevel.repair}`);
+        if ($("#woDetailsNextDiv").length==0) {
+            let newdiv = document.createElement('div');
+            newdiv.id = "woDetailsNextDiv";
+            newdiv.classList.add("justify-content-center", "d-flex");
+            newdiv.style.paddingTop = "10px";
+            let nextbtn = document.createElement('button');
+            nextbtn.id = "btnWoDetailsNext";
+            nextbtn.innerHTML = "Next";
+            $(nextbtn).click(() => switchScreen($("#link_woLabor")[0]));
+            $(nextbtn).addClass("btn");
+            $(nextbtn).addClass("btn-success")
+            $(newdiv).append(nextbtn);
+            $("#woDetails").append(newdiv);
+        }
+    }
+}
+
 function updateWODetailsCoreFunction(text) {
     $("#titleTCoreFunctionArea").text(`Core Function Area: ${text}`);
     if(Object.keys(tcoreStructure.coreFunctions[text].assets).length==1) {
@@ -90,7 +192,7 @@ function updateWODetailsAsset(source) {
     let coreFunc=$(source).attr('coreFunc');
     let asset=$(source).attr('asset');
     if(Object.keys(tcoreStructure.coreFunctions[coreFunc].assets[asset]).length==1) {
-        $("#titleTCoreActivity").text(`Activity: ${Object.keys(tcoreStructure.coreFunctions[coreFunc].assets[asset])[0]}`);
+        $("#titleTCoreActivity").text(`Activity: ${Object.keys(tcoreStructure.coreFunctions[coreFunc].assets[asset].activities)[0]}`);
         updateWODetailsActivityBoxes(coreFunc,asset,true);
     } else {
         $("#titleTCoreActivity").text('Activity');
@@ -126,19 +228,19 @@ function updateWODetailsAssetBoxes(coreFunc,selectedItem) {
 
 function updateWODetailsActivityBoxes(coreFunc,asset,selectedItem) {
     $("#grpTCoreActivity").empty();
-    for(asset in tcoreStructure.coreFunctions[coreFunc].assets) {
-       let alreadyExists = $("#grpTCoreActivity #grpTCoreActivityOption"+TCOREActivity.makeSafe(coreFunc)+TCOREActivity.makeSafe(asset)).length>0;
+    for(activity in tcoreStructure.coreFunctions[coreFunc].assets[asset].activities) {
+       let alreadyExists = $("#grpTCoreActivity #grpTCoreActivityOption"+TCOREActivity.makeSafe(coreFunc)+TCOREActivity.makeSafe(asset)+TCOREActivity.makeSafe(activity)).length>0;
        if(!alreadyExists){
            if(selectedItem) {
                $("#grpTCoreActivity").append(
                    "<label class=\"btn btn-secondary active\" style='margin: 5px;'>"+
-                   "    <input name='grpTCoreActivityOption' id='grpTCoreActivityOption"+TCOREActivity.makeSafe(coreFunc)+TCOREActivity.makeSafe(asset)+"' type='radio' checked='checked' autocomplete='off' onchange='updateWODetailsActivity(\""+coreFunc+"\")'>"+asset +
+                   "    <input name='grpTCoreActivityOption' id='grpTCoreActivityOption"+TCOREActivity.makeSafe(coreFunc)+TCOREActivity.makeSafe(asset)+TCOREActivity.makeSafe(activity)+"' type='radio' checked='checked' autocomplete='off' onchange='updateWODetailsActivity(\""+coreFunc+"\")'>"+activity +
                    "</label>"
                );
            } else {
                $("#grpTCoreActivity").append(
                    "<label class=\"btn btn-secondary active\" style='margin: 5px;'>"+
-                   "    <input name='grpTCoreActivityOption' id='grpTCoreActivityOption"+TCOREActivity.makeSafe(coreFunc)+TCOREActivity.makeSafe(asset)+"' type='radio' autocomplete='off' onchange='updateWODetailsActivity(\""+coreFunc+"\")'>"+asset +
+                   "    <input name='grpTCoreActivityOption' id='grpTCoreActivityOption"+TCOREActivity.makeSafe(coreFunc)+TCOREActivity.makeSafe(asset)+TCOREActivity.makeSafe(activity)+"' type='radio' autocomplete='off' onchange='updateWODetailsActivity(\""+coreFunc+"\")'>"+activity +
                    "</label>"
                );
            }
@@ -159,6 +261,68 @@ function switchScreen(link) {
 }
 
 function addAsset() {
+
+    const linearAdd=function() {
+        if ($("#linearID").val()==""&&$("#linearLogBegin").val()==""&&$("#linearLogEnd").val()=="") {
+            $("#zoomInfoText").text("An asset ID, county log begin, and county log end are required for " +
+                "linear assets");
+            return;
+        }
+        let asset=new Asset($("#assetType").val(),$("#linearID").val(),parseFloat($("#linearLogBegin").val()),
+            parseFloat($("#linearLogEnd").val()),parseFloat($("#linearLatBegin").val()),
+            parseFloat($("#linearLngBegin").val()),parseFloat($("#linearLatEnd").val()),
+            parseFloat($("#linearLngEnd").val()));
+        assets.push(asset);
+        let idxNum=assets.length-1;
+        let newrow=document.createElement('tr');
+        $(newrow).attr('assetIndex',idxNum);
+        let type=document.createElement('td');
+        type.style.verticalAlign="middle";
+        let id=document.createElement('td');
+        $(type).text($("#assetType option:selected").text())
+        let idText=$("#linearID").val()+`&nbsp;&nbsp;<svg onclick="editAsset(${idxNum})" class="bi bi-card-text" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
+                      <path fill-rule="evenodd" d="M14.5 3h-13a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
+                      <path fill-rule="evenodd" d="M3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8zm0 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"/>
+                    </svg>&nbsp;&nbsp;<svg onclick="delAsset(${idxNum})" class="bi bi-trash" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
+                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                      <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                    </svg><br/>From: ${$("#linearLogBegin").val()}
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;To: ${$("#linearLogEnd").val()}`;
+        $(id).html(idText);
+        $(type).appendTo($(newrow));
+        $(id).appendTo($(newrow));
+        $("#assetTableBody").append(newrow);
+    };
+    const pointAdd=function() {
+        if ($("#pointID").val()=="") {
+            $("#zoomInfoText").text("An asset ID is required for point assets.");
+            return;
+        }
+        let asset=new Asset($("#assetType").val(),$("#pointID").val(),0.0,
+            0.0,parseFloat($("#pointLat").val()),
+            parseFloat($("#pointLng").val()),parseFloat($("#pointLat").val()),
+            parseFloat($("#pointLng").val()));
+        assets.push(asset);
+        let idxNum=assets.length-1;
+        let newrow=document.createElement('tr');
+        $(newrow).attr('assetIndex',idxNum);
+        let type=document.createElement('td');
+        type.style.verticalAlign="middle";
+        let id=document.createElement('td');
+        $(type).text($("#assetType option:selected").text())
+        let idText=$("#pointID").val()+`&nbsp;&nbsp;<svg onclick="editAsset(${idxNum})" class="bi bi-card-text" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
+                      <path fill-rule="evenodd" d="M14.5 3h-13a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
+                      <path fill-rule="evenodd" d="M3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8zm0 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"/>
+                    </svg>&nbsp;&nbsp;<svg onclick="delAsset(${idxNum})" class="bi bi-trash" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
+                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                      <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                    </svg>`;
+        $(id).html(idText);
+        $(type).appendTo($(newrow));
+        $(id).appendTo($(newrow));
+        $("#assetTableBody").append(newrow);
+    };
+
     let assetModes ={};
     assetModes.roadway="linear";
     assetModes.barrier="linear";
@@ -166,35 +330,10 @@ function addAsset() {
 
     switch(assetModes[$("#assetType").val()]) {
         case "linear":
-            if ($("#linearID").val()==""&&$("#linearLogBegin").val()==""&&$("#linearLogEnd").val()=="") {
-                $("#zoomInfoText").text("An asset ID, county log begin, and county log end are required for " +
-                    "linear assets");
-                return;
-            }
-            let asset=new Asset($("#assetType").val(),$("#linearID").val(),parseFloat($("#linearLogBegin").val()),
-                parseFloat($("#linearLogEnd").val()),parseFloat($("#linearLatBegin").val()),
-                parseFloat($("#linearLngBegin").val()),parseFloat($("#linearLatEnd").val()),
-                parseFloat($("#linearLngEnd").val()));
-            assets.push(asset);
-            let idxNum=assets.length-1;
-            let newrow=document.createElement('tr');
-            $(newrow).attr('assetIndex',idxNum);
-            let type=document.createElement('td');
-            type.style.verticalAlign="middle";
-            let id=document.createElement('td');
-            $(type).text($("#assetType option:selected").text())
-            let idText=$("#linearID").val()+`&nbsp;&nbsp;<svg onclick="editAsset(${idxNum})" class="bi bi-card-text" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
-                          <path fill-rule="evenodd" d="M14.5 3h-13a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
-                          <path fill-rule="evenodd" d="M3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8zm0 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"/>
-                        </svg>&nbsp;&nbsp;<svg onclick="delAsset(${idxNum})" class="bi bi-trash" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
-                          <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                          <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
-                        </svg><br/>From: ${$("#linearLogBegin").val()}
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;To: ${$("#linearLogEnd").val()}`;
-            $(id).html(idText);
-            $(type).appendTo($(newrow));
-            $(id).appendTo($(newrow));
-            $("#assetTableBody").append(newrow);
+            linearAdd();
+            break;
+        case "point":
+            pointAdd();
             break;
     }
     clearAsset();
@@ -213,12 +352,33 @@ function editAsset(idx) {
         $("#linearID").val(asset.assetId);
         $("#linearLogBegin").val(asset.logBegin);
         $("#linearLogEnd").val(asset.logEnd);
-        map.panTo(latlng);
-        map.setZoom(16);
-        updateMapAssets();
+        map.setView(latlng,16);
+        //updateMapAssets();
     };
-    let updatePoint=function() {
-
+    let updatePoint=async function() {
+        map.removeLayer(markers);
+        markers.clearLayers();
+        $("#pointID").val(asset.assetId);
+        $("#pointLat").val(asset.latBegin);
+        $("#pointLng").val(asset.lngBegin);
+        console.log(latlng);
+        map.off('moveend',updateMapAssets);
+        map.off('zoomend',updateMapAssets);
+        map.setView(latlng,16,{animate:false});
+        //setTimeout((test)={},300);
+        // map.panTo(latlng);
+        // map.setZoom(16);
+        await updateMapAssets();
+        markers.eachLayer((layer1)=>{
+            layer1.eachLayer((layer2)=>{
+                if(layer2.feature.properties.CULVERT_FILE_NUMBER==asset.assetId) {
+                    let redIcon=new L.icon({iconUrl:'/static/mms/images/marker-icon-red.png',shadowUrl:'/static/mms/images/marker-shadow.png',iconSize:[25,41],popupAnchor:[1,-34],shadowSize:[41,41],tooltipAnchor:[16,-28],iconAnchor: [12,41]});
+                    layer2.setIcon(redIcon);
+                }
+            });
+        });
+        map.on('moveend',updateMapAssets);
+        map.on('zoomend',updateMapAssets);
     };
     switch(asset.type) {
         case "roadway":
@@ -242,12 +402,24 @@ function delAsset(idx) {
 }
 
 function clearAsset() {
-    $("#linearID").val("");
-    $("#linearLogBegin").val("");
-    $("#linearLogEnd").val("");
-    if ($("#assetType").val()=="roadway") {
-        map.removeLayer(markers);
-        markers.clearLayers();
+    switch($("#assetType").val()) {
+        case "roadway": case "barrier":
+            $("#linearID").val("");
+            $("#linearLogBegin").val("");
+            $("#linearLogEnd").val("");
+            $("#linearLatBegin").val("");
+            $("#linearLatEnd").val("");
+            $("#linearLngEnd").val("");
+            $("#linearLngBegin").val("");
+            if ($("#assetType").val()=="roadway") {
+                map.removeLayer(markers);
+                markers.clearLayers();
+            }
+            break;
+        case "culvert":
+            $("#pointID").val("");
+            $("#pointLat").val("");
+            $("#pointLng").val("");
     }
 }
 
@@ -262,14 +434,16 @@ function assetTypeChange() {
     updateMapAssets();
 }
 
-function updateMapAssets() {
+async function updateMapAssets(e) {
     switch($("#assetType").val()){
         case "culvert":
             map.removeLayer(markers);
             markers.clearLayers();
-            fetchCulverts();
-            $("#entryContainer").empty();
+            addPointEntry();
             entryState="point";
+            $("#lbl_pointID").text("Culvert File Number");
+            await fetchCulverts();
+            //$("#lbl_pointID ~ .col-6").css("align-items","middle");
             break;
         case "barrier":
             map.removeLayer(markers);
@@ -294,7 +468,8 @@ function updateMapAssets() {
 
 function addLinearEntry(){
     if(entryState!="linear"){
-            $("#templinearEntry .row").each((idx,elem)=>{
+        $("#entryContainer").empty();
+        $("#templinearEntry .row").each((idx,elem)=>{
             $(elem).clone().appendTo("#entryContainer");
         });
         $("#entryContainer [futureid]").each((idx,elem)=>{
@@ -304,7 +479,20 @@ function addLinearEntry(){
     }
 }
 
-function fetchCulverts(){
+function addPointEntry(){
+    if(entryState!="point") {
+        $("#entryContainer").empty();
+        $("#temppointEntry .row").each((idx,elem)=> {
+            $(elem).clone().appendTo("#entryContainer");
+        });
+        $("#entryContainer [futureid]").each((idx,elem)=>{
+            elem.id=$(elem).attr("futureid");
+            $(elem).css("width","100%");
+        });
+    }
+}
+
+async function fetchCulverts(){
     if(map.getZoom()>=12){
         $("#zoomInfoText").text("");
         let bounds=map.getBounds();
@@ -313,6 +501,7 @@ function fetchCulverts(){
         let sw=[bounds.getSouthWest().lng,bounds.getSouthWest().lat];
         let se=[bounds.getSouthEast().lng,bounds.getSouthEast().lat];
         let data={};
+        data.where="STATUS='A'";
         data.geometryType="esriGeometryPolygon";
         //data.geometry=`{"rings":[[[${ne.toString()}],[${nw.toString()}],[${sw.toString()}],[${se.toString()}]]],"spatialReference":{"wkid":4326}}`;
         geometry={};
@@ -324,12 +513,13 @@ function fetchCulverts(){
         data.outSR=4326;
         data.f="geojson";
         data.outFields="CULVERT_FILE_NUMBER";
-        jQuery.post("https://gis.dot.state.oh.us/arcgis/rest/services/TIMS/Assets/MapServer/4/query",data,(resp)=>{
+        await jQuery.post("https://gis.dot.state.oh.us/arcgis/rest/services/TIMS/Assets/MapServer/4/query",data,(resp)=>{
             L.geoJSON(resp.features).addTo(markers);
             markers.eachLayer((layers)=> {
                 layers.eachLayer((layer)=>{
                     layer.options.title="CFN "+layer.feature.properties.CULVERT_FILE_NUMBER;
                     layer.bindPopup("CFN "+layer.feature.properties.CULVERT_FILE_NUMBER);
+                    layer.on('click',culvertClick);
                 });
             });
             map.addLayer(markers);
@@ -337,6 +527,12 @@ function fetchCulverts(){
     } else {
         $("#zoomInfoText").text("Zoom in closer to see culverts.");
     }
+}
+
+function culvertClick(culvert) {
+    $("#pointID").val(culvert.target.feature.properties.CULVERT_FILE_NUMBER);
+    $("#pointLat").val(culvert.target.feature.geometry.coordinates[1]);
+    $("#pointLng").val(culvert.target.feature.geometry.coordinates[0]);
 }
 
 function fetchBarriers() {
@@ -543,12 +739,12 @@ $(document).ready(()=> {
     map.on('click',mapClick);
     markers=L.layerGroup();
     updateMapAssets();
-    $("#bdyTCoreFunctionArea").append(
-       "<div id=\"grpTCoreFunctionArea\" class=\"container btn-group-toggle\" data-toggle=\"buttons\"></div>"
-    );
-    $("#bdyTCoreAsset").append(
-       "<div id=\"grpTCoreAsset\" class=\"container btn-group-toggle\" data-toggle=\"buttons\"></div>"
-    );
+    // $("#bdyTCoreFunctionArea").append(
+    //    "<div id=\"grpTCoreFunctionArea\" class=\"container btn-group-toggle\" data-toggle=\"buttons\"></div>"
+    // );
+    // $("#bdyTCoreAsset").append(
+    //    "<div id=\"grpTCoreAsset\" class=\"container btn-group-toggle\" data-toggle=\"buttons\"></div>"
+    // );
     tcoreCoreFunctions=[...new Set(tcore.map(x=>x.coreFunction))];
     tcoreStructure.coreFunctions={};
     tcoreCoreFunctions.forEach((coreFunc)=> {
@@ -562,27 +758,42 @@ $(document).ready(()=> {
            obj.assets[asset]={}
            let relActivities=tcore.filter(x=>x.coreFunction==coreFunc&&x.asset==asset);
            relActivities=[...new Set(relActivities.map((z)=>z.activity))];
+           obj.assets[asset].asset=asset;
            obj.assets[asset].activities={}
            relActivities.forEach((activity)=>{
                obj.assets[asset].activities[activity]={};
+               obj.assets[asset].activities[activity].activity=activity;
                let relRepairs=tcore.filter(x=>x.coreFunction==coreFunc&&x.asset==asset&&x.activity==activity);
                relRepairs=[...new Set(relRepairs.map((z)=>z.repairType))];
                obj.assets[asset].activities[activity].repairs={};
                relRepairs.forEach((repair)=>{
                    obj.assets[asset].activities[activity].repairs[repair]={};
+                   obj.assets[asset].activities[activity].repairs[repair].repair=repair;
                });
            });
        });
        tcoreStructure.coreFunctions[coreFunc]=obj;
     });
-    tcore.forEach((activity) => {
-       let alreadyExists = $("#grpTCoreFunctionArea #grpTCoreFunctionAreaOption"+activity.coreFunctionSafe).length>0;
-       if(!alreadyExists){
+    //tcoreStructure.coreFunctions
+    Object.values(tcoreStructure.coreFunctions).forEach((cf,idx)=>{
+        let alreadyExists = $(`#grpTCoreFunctionArea input[tcoreLevel="coreFunction"][tcoreDesc="${cf.coreFunc}"]`).length>0;
+        if(!alreadyExists){
            $("#grpTCoreFunctionArea").append(
-               "<label class=\"btn btn-secondary active\" style='margin: 5px;'>"+
-               "    <input name='grpTCoreFunctionAreaOption' id='grpTCoreFunctionAreaOption"+activity.coreFunctionSafe+"' type='radio' autocomplete='off' onchange='updateWODetailsCoreFunction(\""+activity.coreFunction+"\")'>"+activity.coreFunction +
-               "</label>"
+               `<label class="btn btn-secondary" style='margin: 5px;'>`+
+               `    <input name='grpTCoreFunctionAreaOption' id="grpTCoreFunctionAreaOption${idx.toString()}" type='radio' autocomplete='off' tcoreLevel="coreFunction" tcoreCoreFunction="${cf.coreFunc}" tcoreAsset="" tcoreActivity="" tcoreRepair="" onchange="woDetailsItemSelect(this,tcoreStructure.coreFunctions['${cf.coreFunc.toString()}'])">`+cf.coreFunc +
+               `</label>`
            );
-       }
+        }
     });
+    /*tcore.forEach((activity,idx) => {
+       //let alreadyExists = $(`#grpTCoreFunctionArea #grpTCoreFunctionAreaOption${idx.toString()}`).length>0;
+        let alreadyExists = $(`#grpTCoreFunctionArea input[tcoreLevel="coreFunction"][tcoreDesc="${activity.coreFunction}"]`).length>0;
+        if(!alreadyExists){
+           $("#grpTCoreFunctionArea").append(
+               `<label class="btn btn-secondary active" style='margin: 5px;'>`+
+               `    <input name='grpTCoreFunctionAreaOption' id="grpTCoreFunctionAreaOption${idx.toString()}" type='radio' autocomplete='off' tcoreLevel="coreFunction" tcoreDesc="${activity.coreFunction}" onchange="woDetailsItemSelect(this)">`+activity.coreFunction +
+               `</label>`
+           );
+        }
+    });*/
 });

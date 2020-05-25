@@ -12,6 +12,10 @@ class WorkOrder(models.Model):
     entryUser = models.CharField(max_length=50)
     entryDt = models.DateField(default=django.utils.timezone.now)
 
+class Project(models.Model):
+    id=models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
+    projname=models.CharField(max_length=100)
+
 
 class WOLabor(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
