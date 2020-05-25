@@ -24,6 +24,22 @@ class TCOREActivity {
     }
 }
 
+class Employee {
+    name="";
+    costcenter="";
+    rate=0.0;
+    
+    constructor(_name,_costcenter,_rate) {
+        this.name=_name;
+        this.costcenter=_costcenter;
+        this.rate=_rate;
+    }
+    
+    getName() {
+        return this.name + " : " + this.costcenter;
+    }
+}
+
 class Asset {
     type="";
     assetId="";
@@ -45,6 +61,53 @@ class Asset {
         this.latEnd=_latEnd;
         this.lngEnd=_lngEnd;
     }
+}
+
+class Labor {
+    lbDt="";
+    employee="";
+    costcenter="";
+    hours=0.0;
+    rate=0.0;
+    callback=false;
+    state="active";
+    
+    constructor(_lbDt="",_employee="",_costcenter="",_hours=0.0,_rate=0.0,_callback=false) {
+        this.lbDt=_lbDt;
+        this.employee=_employee;
+        this.costcenter=_costcenter;
+        this.hours=_hours;
+        this.rate=_rate;
+        this.callback=_callback;
+    }
+}
+
+class Equip {
+    equipDt="";
+    equipType=0;
+    equipDesc="";
+    equipId=0;
+    meterUsage=0.0;
+    meterType="";
+    equipRate=0.0;
+    state="active";
+}
+
+class Material {
+    mtDt="";
+    mtDesc="";
+    mtId=0;
+    mtQty=0;
+    mtRate=0;
+    state="active";
+}
+
+class OtherContract {
+    ocDt="";
+    ocType="";
+    ocDesc="";
+    ocCost=0.0;
+    state="active";
 }
 
 let map="";
@@ -71,9 +134,198 @@ let bridges=[new TCOREActivity('Bridges','Bridges','Sweeping','Normal'),
     new TCOREActivity('Bridges','Bridges','Sealing','Substructure')]
 let tcore=[...safety,...drainage,...pavement,...bridges];
 
+let employees=[new Employee("Matt Blankenship","D3 - RIC - CtyHq", 20.0),
+    new Employee("Paul Ensinger","D4 - SUM - CtyHQ", 20.0),
+    new Employee("Todd Dyckes", "D12 - CUY - Warrensville", 20.0),
+    new Employee("Jim Cook", "D6 - FRA - Westerville", 20.0),
+    new Employee("Michael Piolata", "CO - Fin - Inventory",20.0),
+    new Employee("Ray Henry","D10 - DHQ - DistHQ",20.0),
+    new Employee("Bill Welch", "CO - Ops - TrafMgmt",20.0),
+    new Employee("Mike Moreland","CO - Ops - MaintAdmin", 20.0),
+    new Employee("Dean Otworth","CO - Ops - DD", 20.0),
+    new Employee("Josh Thieman","CO - Ops - Permits",20.0),
+    new Employee("Bill Welch","D4 - STA- CtyHQ", 20.0)];
+
 let tcoreStructure={};
 
 let assets=[];
+let labor=[];
+let equip=[];
+let material=[];
+let otherContract=[];
+
+function addLabor() {
+    let createRow=function(_idx,_dt,_empl,_costcenter,_hours,_callback){
+        let btns=`<svg onclick="editLabor(${_idx})" class="bi bi-card-text" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
+                      <path fill-rule="evenodd" d="M14.5 3h-13a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
+                      <path fill-rule="evenodd" d="M3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8zm0 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"/>
+                    </svg><br/><svg onclick="delLabor(${_idx})" class="bi bi-trash" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
+                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                      <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                    </svg>`
+        let tr=document.createElement('tr');
+        tr.setAttribute("scope","row");
+        tr.setAttribute("lbIndex",_idx);
+        let tdDt=document.createElement('td');
+        tdDt.style.display="grid";
+        tdDt.style.gridTemplateColumns="1.1em 1fr";
+        tdDt.innerHTML="<div>"+btns+"</div><div style='display:flex;align-items:center;'><p style='margin-top: auto!important;; margin-bottom: auto!important;margin-left: 5px;'>"+_dt+"</p></div>";
+        let tdEmpl=document.createElement('td');
+        tdEmpl.innerHTML=_empl+"<br/>"+_costcenter;
+        let tdHours=document.createElement('td');
+        tdHours.innerHTML=_hours;
+        let tdCallback = document.createElement('td');
+        tdCallback.innerHTML = _callback ? "Y" : "N";
+        tr.append(tdDt,tdEmpl,tdHours,tdCallback);
+        document.querySelector("#bdyLabor").append(tr);
+    }
+    document.querySelector("#lbMessages").innerHTML="";
+    let dt=$("#lbDateOfWork").val();
+    let empl=$("#lbEmployee").val().split(' :')[0];
+    let hours=$("#lbHours").val();
+    let callback=$("#lbCallback").prop("checked");
+    if ((!dt||!empl||!hours)||(!document.querySelector("#lbHours").validity.valid)) {
+        let incomplete=(!dt||!empl||!hours);
+        let invalidHrs=(!document.querySelector("#lbHours").validity.valid);
+        if (incomplete) {
+            let msg=document.createElement('p');
+            msg.classList.add('zoomInfoText');
+            msg.innerHTML='Please ensure Date of Work, Employee, and Hours Worked are filled in.';
+            document.querySelector("#lbMessages").append(msg);
+            
+        }
+        if (invalidHrs) {
+            let msg=document.createElement('p');
+            msg.classList.add('zoomInfoText');
+            msg.innerHTML='Hours entry is invalid. Must be less than or equal to 24 hours and contain only 1 decimal place';
+            document.querySelector("#lbMessages").append(msg);
+        }
+        return;
+    }
+    let dt2=null;
+    let hours2=null;
+    if($("#lbDateOfWork2").length>0){
+        dt2=$("#lbDateOfWork2").val();
+    }
+    if ($("#lbHours2").length>0) {
+        hours2=$("#lbHours2").val();
+    }
+    let emplObj=employees.filter(x=>x.name==empl)[0]
+    let rate=emplObj.rate;
+    let costcenter=emplObj=emplObj.costcenter;
+    let lb1 = new Labor(dt,empl,costcenter,hours,rate,callback);
+    labor.push(lb1);
+    let lb1_idx=labor.length-1;
+    let lb2 = null;
+    let lb2_idx = null;
+    if (dt2!=null&&hours2!=null) {
+        lb2 = new Labor(dt2,empl,costcenter,hours2,rate,callback);
+        labor.push(lb2);
+        lb2_idx=labor.length-1;
+    }
+    createRow(lb1_idx,dt,empl,costcenter,hours,callback);
+    if (lb2) {
+        createRow(lb2_idx,dt2,empl,costcenter,hours2,callback);
+    }
+    document.querySelector("#lbDateOfWork").value='';
+    document.querySelector("#lbEmployee").value='';
+    document.querySelector("#lbHours").value='';
+    document.querySelector("#lbCallback").checked=false;
+    document.querySelector("#midnightSplitDateWorkedDay2").innerHTML="";
+    document.querySelector("#midnightSplitDateWorkedDay2").style.display="none";
+    document.querySelector("#midnightSplitHoursWorkedDay2").innerHTML="";
+    document.querySelector("#midnightSplitHoursWorkedDay2").style.display="none";
+}
+
+function editLabor(idx) {
+    let rec=labor[idx];
+    document.querySelector("#lbDateOfWork").value=rec.lbDt;
+    document.querySelector("#lbEmployee").value=rec.employee+' : '+rec.costcenter;
+    document.querySelector("#lbHours").value=rec.hours;
+    document.querySelector("#lbCallback").checked=rec.callback;
+    delLabor(idx);
+}
+
+function delLabor(idx) {
+    labor[idx].state="deleted";
+    document.querySelector(`tr[lbIndex="${idx}"]`).remove();
+}
+
+function calcHoursCalc() {
+    let createSplitDayFields = function () {
+        let dateworked2labeldiv=document.createElement('div');
+        dateworked2labeldiv.classList.add('col');
+        let dateworked2label=document.createElement('label');
+        dateworked2label.htmlFor='lbDateOfWork2';
+        dateworked2label.innerHTML='Day 2 Date of Work';
+        dateworked2labeldiv.append(dateworked2label);
+        
+        let dateworked2inputdiv=document.createElement('div');
+        dateworked2inputdiv.classList.add('col','d-flex');
+        let dateworked2input=document.createElement('input');
+        dateworked2input.id='lbDateOfWork2';
+        dateworked2input.style.width='100%';
+        dateworked2input.type='date';
+        dateworked2inputdiv.append(dateworked2input);
+        
+        let hours2labeldiv=document.createElement('div');
+        hours2labeldiv.classList.add('col')
+        let hours2label=document.createElement('label');
+        hours2label.htmlFor='lbHours2';
+        hours2label.innerHTML="Day 2 Hours Worked";
+        hours2labeldiv.append(hours2label);
+        
+        let hours2inputdiv=document.createElement('div');
+        hours2inputdiv.classList.add('col','d-flex','flex-column','justify-content-center');
+        let hours2input=document.createElement('input');
+        hours2input.id='lbHours2';
+        hours2input.type='number';
+        hours2input.step='0.1';
+        hours2input.max=24;
+        hours2input.min=0;
+        hours2input.classList.add('hideOverflow');
+        hours2inputdiv.append(hours2input);
+        
+        $("#midnightSplitDateWorkedDay2").append(dateworked2labeldiv);
+        $("#midnightSplitDateWorkedDay2").append(dateworked2inputdiv);
+        $("#midnightSplitHoursWorkedDay2").append(hours2labeldiv);
+        $("#midnightSplitHoursWorkedDay2").append(hours2inputdiv);
+    }
+    
+    let modStartDt=document.querySelector("#modalStartDate").value;
+    let modStartTime=document.querySelector("#modalStartTime").value;
+    let modEndDt=document.querySelector("#modalEndDate").value;
+    let modEndTime=document.querySelector("#modalEndTime").value;
+    let startDt=moment(modStartDt);
+    let endDt=moment(modEndDt);
+    let startDtTm=moment(modStartDt+"T"+modStartTime);
+    let endDtTm=moment(modEndDt+"T"+modEndTime);
+    if (endDt.diff(startDt,'days')<0) {
+        //error
+    } else if (endDt.diff(startDt,'days')==0) {
+        //same day
+        let hours=Math.round(endDtTm.diff(startDtTm,'minutes')/60*10)/10;
+        document.querySelector("#lbHours").value=hours;
+        $("#calcHours").modal('hide');
+    } else if (endDt.diff(startDt,'days')>0) {
+        let firstHours=Math.round(endDt.diff(startDtTm,'minutes')/60*10)/10;
+        let secondHours=Math.round(endDtTm.diff(endDt,'minutes')/60*10)/10;
+        document.querySelector("#lbHours").value=firstHours;
+        createSplitDayFields();
+        document.querySelector("#lbDateOfWork2").value=endDt.toISOString().split('T')[0];
+        document.querySelector("#lbHours2").value=secondHours;
+        document.querySelector("#midnightSplitDateWorkedDay2").style.display="";
+        document.querySelector("#midnightSplitHoursWorkedDay2").style.display="";
+    }
+    if (document.querySelector("#lbDateOfWork").value=="") {
+        document.querySelector("#lbDateOfWork").value=document.querySelector("#modalStartDate").value;
+    }
+    document.querySelector("#modalStartDate").value="";
+    document.querySelector("#modalStartTime").value="";
+    document.querySelector("#modalEndDate").value="";
+    document.querySelector("#modalEndTime").value="";
+    $("#calcHours").modal('hide');
+}
 
 function woDetailsItemSelect(elem,tcoreLevel) {
     if($(elem).attr("tcoreLevel")=="coreFunction"){
@@ -745,7 +997,7 @@ $(document).ready(()=> {
     // $("#bdyTCoreAsset").append(
     //    "<div id=\"grpTCoreAsset\" class=\"container btn-group-toggle\" data-toggle=\"buttons\"></div>"
     // );
-    tcoreCoreFunctions=[...new Set(tcore.map(x=>x.coreFunction))];
+    let tcoreCoreFunctions=[...new Set(tcore.map(x=>x.coreFunction))];
     tcoreStructure.coreFunctions={};
     tcoreCoreFunctions.forEach((coreFunc)=> {
        let obj={};
@@ -774,7 +1026,6 @@ $(document).ready(()=> {
        });
        tcoreStructure.coreFunctions[coreFunc]=obj;
     });
-    //tcoreStructure.coreFunctions
     Object.values(tcoreStructure.coreFunctions).forEach((cf,idx)=>{
         let alreadyExists = $(`#grpTCoreFunctionArea input[tcoreLevel="coreFunction"][tcoreDesc="${cf.coreFunc}"]`).length>0;
         if(!alreadyExists){
@@ -785,15 +1036,35 @@ $(document).ready(()=> {
            );
         }
     });
-    /*tcore.forEach((activity,idx) => {
-       //let alreadyExists = $(`#grpTCoreFunctionArea #grpTCoreFunctionAreaOption${idx.toString()}`).length>0;
-        let alreadyExists = $(`#grpTCoreFunctionArea input[tcoreLevel="coreFunction"][tcoreDesc="${activity.coreFunction}"]`).length>0;
-        if(!alreadyExists){
-           $("#grpTCoreFunctionArea").append(
-               `<label class="btn btn-secondary active" style='margin: 5px;'>`+
-               `    <input name='grpTCoreFunctionAreaOption' id="grpTCoreFunctionAreaOption${idx.toString()}" type='radio' autocomplete='off' tcoreLevel="coreFunction" tcoreDesc="${activity.coreFunction}" onchange="woDetailsItemSelect(this)">`+activity.coreFunction +
-               `</label>`
-           );
+    $("#modalStartDate").on('change',(e)=>{
+        let selDate=moment(document.querySelector("#modalStartDate").value);
+        let maxDate=selDate.clone().add(1,'day');
+        document.querySelector("#modalEndDate").setAttribute("max",maxDate.toISOString().split('T')[0]);
+        document.querySelector("#modalEndDate").setAttribute("min",selDate.toISOString().split('T')[0]);
+    });
+    $("#calcHours").on('shown.bs.modal',()=> {
+        dateofwork=document.querySelector("#lbDateOfWork").value;
+        if (dateofwork) {
+            document.querySelector("#modalStartDate").value=(moment(dateofwork)).toISOString().split('T')[0];
+            $("#modalStartDate").change();
+        } else {
+            document.querySelector("#modalStartDate").value=(new Date()).toISOString().split('T')[0];
+            $("#modalStartDate").change();
         }
-    });*/
+    });
+    let laborComplete=new autoComplete({
+        selector: '#lbEmployee',
+        minChars: 2,
+        source: (term,suggest) => {
+            term=term.toLowerCase();
+            let choices = employees.map(x=>x.getName());
+            let matches = [];
+            choices.forEach((choice)=> {
+                if (choice.toLowerCase().indexOf(term)>=0) {
+                    matches.push(choice);
+                }
+            });
+            suggest(matches);
+        }
+    })
 });

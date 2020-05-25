@@ -16,3 +16,7 @@ a.link-white {
     text-align: center;
     width:100%;
 }
+
+.hideOverflow {
+    overflow:hidden;
+}
