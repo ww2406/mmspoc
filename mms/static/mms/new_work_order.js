@@ -123,9 +123,21 @@ class Material {
     mtDt="";
     mtDesc="";
     mtId=0;
+    mtCostCenter="";
     mtQty=0;
+    mtUnits="";
     mtRate=0;
     state="active";
+    
+    constructor(_mtDt="",_mtDesc="",_mtId=0,_mtCostCenter="",_mtQty=0,_mtUnits="",_mtRate=0) {
+        this.mtDt=_mtDt;
+        this.mtDesc=_mtDesc;
+        this.mtId=_mtId;
+        this.mtCostCenter=_mtCostCenter;
+        this.mtQty=_mtQty;
+        this.mtUnits=_mtUnits;
+        this.mtRate=_mtRate;
+    }
 }
 
 class OtherContract {
@@ -182,13 +194,19 @@ let equipment=[new Equipment("221 - PICKUP, 1/2 TON",2214100,"D4 - SUM - CtyHQ",
     new Equipment("321 - BROOM, SELF-PROPELLED",3216000, "D6 - FRA - Westerville","hours",42.15),
     new Equipment("321 - BROOM, SELF-PROPELLED",3213000, "D3 - RIC - CtyHQ","hours",42.15)];
 
+let materials=[new Material("","#42011000 - SALT",42011000,"D4 - SUM - CtyHQ",0,"tons",60),
+    new Material("","#42011000 - SALT",42011000,"D6 - FRA - Westerville",0,"tons",60),
+    new Material("","#42011000 - SALT",42011000,"D3 - RIC - CtyHQ",0,"tons",60),
+    new Material("","#42011500 - SALT BRINE",42011500,"D4 - SUM - CtyHQ",0,"gals",.14),
+    new Material("","#42011500 - SALT BRINE",42011500,"D6 - FRA - Westerville",0,"gals",.14),
+    new Material("","#42011500 - SALT BRINE",42011500,"D3 - RIC - CtyHQ",0,"gals",.14)];
 
 let tcoreStructure={};
 
 let assets=[];
 let labor=[];
 let woEquip=[];
-let material=[];
+let woMaterials=[];
 let otherContract=[];
 
 function addLabor() {
@@ -349,7 +367,7 @@ function calcHoursCalc() {
         let secondHours=Math.round(endDtTm.diff(endDt,'minutes')/60*10)/10;
         document.querySelector("#lbHours").value=firstHours;
         createSplitDayFields();
-        document.querySelector("#lbDateOfWork2").value=endDt.toISOString().split('T')[0];
+        document.querySelector("#lbDateOfWork2").value=endDt.format().split('T')[0];
         document.querySelector("#lbHours2").value=secondHours;
         document.querySelector("#midnightSplitDateWorkedDay2").style.display="";
         document.querySelector("#midnightSplitHoursWorkedDay2").style.display="";
@@ -536,6 +554,97 @@ function delEquip(idx) {
     document.querySelector(`tr[eqIndex="${idx}"]`).remove();
 }
 
+function addMt() {
+    document.querySelector("#mtMessages").innerHTML="";
+    let mtId=document.querySelector("input[name='mtId']").value;
+    let workDate=document.querySelector("#mtWorkDate").value;
+    let qty=document.querySelector("#mtQtyUsed").value;
+    if(!mtId||!workDate||!qty) {
+        document.querySelector("#mtMessages").innerHTML="<p class='zoomInfoText'>Ensure you have selected a material and entered a date and quantity.</p>";
+        return;
+    }
+    if(!document.querySelector("#mtWorkDate").validity.valid) {
+        document.querySelector("#mtMessages").innerHTML+="<p class='zoomInfoText'>Work Date not valid</p>";
+    }
+    if(!document.querySelector("#mtQtyUsed").validity.valid) {
+        document.querySelector("#mtMessages").innerHTML+="<p class='zoomInfoText'>Quantity not valid</p>";
+    }
+    if(document.querySelector("#mtMessages").innerHTML!=""){
+        return;
+    }
+    mtId=parseInt(mtId);
+    qty=parseFloat(qty);
+    let mtObj=materials.filter(x=>x.mtId==mtId)[0];
+    let mt=new Material(workDate,mtObj.mtDesc,mtId,mtObj.mtCostCenter,qty,mtObj.mtUnits,mtObj.mtRate);
+    woMaterials.push(mt);
+    let idx=woMaterials.length-1;
+    let tr=document.createElement('tr');
+    tr.setAttribute("mtIndex",idx);
+    let tdDate=document.createElement('td');
+    let btns=`<svg onclick="editMt(${idx})" class="bi bi-card-text" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
+                      <path fill-rule="evenodd" d="M14.5 3h-13a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
+                      <path fill-rule="evenodd" d="M3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8zm0 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"/>
+                    </svg><br/><svg onclick="delMt(${idx})" class="bi bi-trash" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
+                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                      <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                    </svg>`;
+    tdDate.style.display='grid';
+    tdDate.style.gridTemplateColumns='1.1em 1fr';
+    tdDate.innerHTML="<div>"+btns+"</div><div style='display:flex;align-items:center;'><p style='margin-top: auto!important;; margin-bottom: auto!important;margin-left: 5px;'>"+workDate+"</p></div>";
+    let tdMt=document.createElement('td');
+    tdMt.innerHTML=mtObj.mtDesc;
+    tdMt.style.verticalAlign="middle";
+    let tdQty=document.createElement('td');
+    tdQty.innerHTML=qty;
+    tdQty.style.verticalAlign="middle";
+    let tdUnits=document.createElement('td');
+    tdUnits.innerHTML=mtObj.mtUnits;
+    tdUnits.style.verticalAlign="middle";
+    tr.append(tdDate,tdMt,tdQty,tdUnits);
+    document.querySelector("#bdyMt").append(tr);
+    $("#mtMessages").empty();
+    $("#mtSelDesc").val('');
+    $("#bdyMtSelect").empty();
+    $("#mtWorkDate").val('');
+    $("#mtQtyUsed").val('');
+    $("#mtQtyUsedLabel").text('');
+}
+
+function editMt(idx) {
+    let mt=woMaterials[idx];
+    let workDate=mt.mtDt;
+    let qty=mt.mtQty;
+    let desc=mt.mtDesc;
+    let mtId=mt.mtId;
+    document.querySelector("#mtQtyUsed").value=qty;
+    document.querySelector("#mtWorkDate").value=workDate;
+    document.querySelector("#mtQtyUsedLabel").innerHTML=mt.mtUnits;
+    let tr=document.createElement('tr');
+    let tdradio=document.createElement('td');
+    let radio=document.createElement('input');
+    radio.type='radio';
+    radio.name='mtId';
+    radio.id=`mtId${mt.mtId}`;
+    radio.value=mt.mtId;
+    radio.checked=true;
+    tdradio.append(radio);
+    let tdmtdesc=document.createElement('td');
+    tdmtdesc.innerHTML=mt.mtDesc;
+    tr.append(tdradio,tdmtdesc);
+    document.querySelector("#bdyMtSelect").append(tr);
+    $("input[name='mtId']").change((e)=>{
+        let mtId=document.querySelector("input[name='mtId']").value;
+        let mtObj=materials.filter(x=>x.mtId==parseInt(mtId))[0];
+        document.querySelector("#mtQtyUsedLabel").innerHTML=mtObj.mtUnits;
+    });
+    delMt(idx);
+}
+
+function delMt(idx) {
+    woMaterials[idx].state="deleted";
+    document.querySelector(`tr[mtIndex="${idx}"]`).remove();
+}
+
 function woDetailsItemSelect(elem,tcoreLevel) {
     if($(elem).attr("tcoreLevel")=="coreFunction"){
         $("#woDetails #woDetailsNextDiv").remove();
@@ -711,6 +820,15 @@ function updateWODetailsActivityBoxes(coreFunc,asset,selectedItem) {
 
 function switchScreen(link) {
     let pages=["woAssets","woDetails","woLabor","woEquip","woMaterials","woOtherContract"]
+    let elemnoid=link.id.split('_')[1];
+    let titles= {
+        woAssets: { title: "Work Order Assets" },
+        woDetails: { title: "Work Order Details" },
+        woLabor: { title: "Work Order Labor"},
+        woEquip: { title: "Work Order Equipment"},
+        woMaterials: { title: "Work Order Materials"},
+        woOtherContract: { title: "Work Order Other/Contract"}
+    }
     let elemid="#"+link.id.split('_')[1];
     $(link)[0].style.fontWeight="bold";
     $(elemid)[0].style.display='';
@@ -719,6 +837,7 @@ function switchScreen(link) {
         $("#link_"+elem)[0].style.fontWeight='normal';
         $("#"+elem)[0].style.display='none';
     });
+    document.querySelector("#secHeader").innerHTML=`<h2>${titles[elemnoid].title}</h2>`;
 }
 
 function addAsset() {
@@ -1248,16 +1367,16 @@ $(document).ready(()=> {
     $("#modalStartDate").on('change',(e)=>{
         let selDate=moment(document.querySelector("#modalStartDate").value);
         let maxDate=selDate.clone().add(1,'day');
-        document.querySelector("#modalEndDate").setAttribute("max",maxDate.toISOString().split('T')[0]);
-        document.querySelector("#modalEndDate").setAttribute("min",selDate.toISOString().split('T')[0]);
+        document.querySelector("#modalEndDate").setAttribute("max",maxDate.format().split('T')[0]);
+        document.querySelector("#modalEndDate").setAttribute("min",selDate.format().split('T')[0]);
     });
     $("#calcHours").on('shown.bs.modal',()=> {
         dateofwork=document.querySelector("#lbDateOfWork").value;
         if (dateofwork) {
-            document.querySelector("#modalStartDate").value=(moment(dateofwork)).toISOString().split('T')[0];
+            document.querySelector("#modalStartDate").value=(moment(dateofwork)).format().split('T')[0];
             $("#modalStartDate").change();
         } else {
-            document.querySelector("#modalStartDate").value=(new Date()).toISOString().split('T')[0];
+            document.querySelector("#modalStartDate").value=(new Date()).format().split('T')[0];
             $("#modalStartDate").change();
         }
     });
@@ -1289,5 +1408,36 @@ $(document).ready(()=> {
         elem.value=eqCC;
         elem.innerHTML=eqCC;
         document.querySelector("#eqSelCC").append(elem);
-    })
+    });
+    $("#mtSelDesc").keyup((e)=> {
+        document.querySelector("#bdyMtSelect").innerHTML="";
+        let mtSelValue=document.querySelector("#mtSelDesc").value;
+        if (mtSelValue=="") {
+            return;
+        }
+        let mts=[...new Set(materials.filter(x=>x.mtDesc.toLowerCase().indexOf(mtSelValue.toLowerCase())>-1).map(x=>x.mtId))];
+        mts.forEach((mt)=> {
+            let mtObj=materials.filter(x=>x.mtId==mt)[0];
+            let tr=document.createElement('tr');
+            let tdradio=document.createElement('td');
+            let radio=document.createElement('input');
+            radio.type='radio';
+            radio.name='mtId';
+            radio.id=`mtId${mtObj.mtId}`;
+            radio.value=mtObj.mtId;
+            tdradio.append(radio);
+            let tdmtdesc=document.createElement('td');
+            tdmtdesc.innerHTML=mtObj.mtDesc;
+            tr.append(tdradio,tdmtdesc);
+            document.querySelector("#bdyMtSelect").append(tr);
+        });
+        $("input[name='mtId']").change((e)=>{
+            let mtId=document.querySelector("input[name='mtId']").value;
+            let mtObj=materials.filter(x=>x.mtId==parseInt(mtId))[0];
+            document.querySelector("#mtQtyUsedLabel").innerHTML=mtObj.mtUnits;
+        });
+    });
+    document.querySelectorAll("input[type='date']").forEach((elem)=>{
+        elem.max=moment().format().split('T')[0];
+    });
 });
