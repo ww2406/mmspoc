@@ -146,6 +146,13 @@ class OtherContract {
     ocDesc="";
     ocCost=0.0;
     state="active";
+    
+    constructor(_ocDt,_ocType,_ocDesc,_ocCost) {
+        this.ocDt=_ocDt;
+        this.ocType=_ocType;
+        this.ocDesc=_ocDesc;
+        this.ocCost=_ocCost;
+    }
 }
 
 let map="";
@@ -207,7 +214,7 @@ let assets=[];
 let labor=[];
 let woEquip=[];
 let woMaterials=[];
-let otherContract=[];
+let woOtherContract=[];
 
 function addLabor() {
     let createRow=function(_idx,_dt,_empl,_costcenter,_hours,_callback){
@@ -643,6 +650,80 @@ function editMt(idx) {
 function delMt(idx) {
     woMaterials[idx].state="deleted";
     document.querySelector(`tr[mtIndex="${idx}"]`).remove();
+}
+
+function addOC() {
+    document.querySelector("#ocMessages").innerHTML="";
+    let workDate=document.querySelector("#ocWorkDate").value;
+    let costType=document.querySelector("#ocType").value;
+    let description=document.querySelector("#ocDesc").value;
+    let cost=document.querySelector("#ocCost").value;
+    if(costType=='any'||!description||!cost||!workDate){
+        document.querySelector("#ocMessages").innerHTML+="<p class='zoomInfoText'>All fields are required.</p>";
+    }
+    if(!document.querySelector("#ocCost").validity.valid) {
+        document.querySelector("#ocMessages").innerHTML+="<p class='zoomInfoText'>Cost must be greater than 0</p>";
+    }
+    if (document.querySelector("#ocMessages").innerHTML!="") {
+        return;
+    }
+    cost=parseFloat(cost);
+    let ocObj=new OtherContract(workDate,costType,description,cost);
+    woOtherContract.push(ocObj);
+    let idx=woOtherContract.length-1;
+
+    let tr=document.createElement('tr');
+    tr.setAttribute("ocIndex",idx);
+    let tdDate=document.createElement('td');
+    let btns=`<svg onclick="editOC(${idx})" class="bi bi-card-text" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
+                      <path fill-rule="evenodd" d="M14.5 3h-13a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
+                      <path fill-rule="evenodd" d="M3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8zm0 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"/>
+                    </svg><br/><svg onclick="delOC(${idx})" class="bi bi-trash" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
+                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                      <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                    </svg>`;
+    tdDate.style.display='grid';
+    tdDate.style.gridTemplateColumns='1.1em 1fr';
+    tdDate.innerHTML="<div>"+btns+"</div><div style='display:flex;align-items:center;'><p style='margin-top: auto!important;; margin-bottom: auto!important;margin-left: 5px;'>"+workDate+"</p></div>";
+    let tdType=document.createElement('td');
+    tdType.style.verticalAlign="middle";
+    tdType.innerHTML=costType;
+    let tdDesc=document.createElement('td');
+    tdDesc.innerHTML=description;
+    tdDesc.style.verticalAlign="middle";
+    let tdCost=document.createElement('td');
+    tdCost.innerHTML="$"+cost;
+    tdCost.style.verticalAlign="middle";
+    tr.append(tdDate,tdType,tdDesc,tdCost);
+    document.querySelector("#bdyOC").append(tr);
+    
+    document.querySelectorAll("#ocInputFields input").forEach((elem)=>{
+        elem.value='';
+    });
+    document.querySelectorAll("#ocInputFields select").forEach((elem)=> {
+        elem.value='any';
+    });
+    document.querySelector("#ocMessages").innerHTML="";
+}
+
+function editOC(idx) {
+    let ocObj=woOtherContract[idx];
+    document.querySelectorAll("#ocInputFields input").forEach((elem)=>{
+        elem.value='';
+    });
+    document.querySelectorAll("#ocInputFields select").forEach((elem)=> {
+        elem.value='any';
+    });
+    document.querySelector("#ocType").value=ocObj.ocType;
+    document.querySelector("#ocWorkDate").value=ocObj.ocDt;
+    document.querySelector("#ocDesc").value=ocObj.ocDesc;
+    document.querySelector("#ocCost").value=ocObj.ocCost;
+    delOC(idx);
+}
+
+function delOC(idx) {
+    woOtherContract[idx].state='deleted';
+    document.querySelector(`tr[ocIndex='${idx}']`).remove();
 }
 
 function woDetailsItemSelect(elem,tcoreLevel) {

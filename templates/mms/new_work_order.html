@@ -378,7 +378,58 @@
                     </div>
                 </div>
                 <div id="woOtherContract" style="display: none;">
+                    <div class="container" id="ocContainer">
+                        <div class="row border-bottom" style="padding-bottom: 10px;">
+                            <div class="col-5">
+                                <div class="container" style="padding-top: 10px;">
+                                    <div class="row" id="ocMessages">
 
+                                    </div>
+                                    <div id="ocInputFields" class="row d-flex flex-column">
+                                        <label for="ocType">
+                                            Cost Type
+                                        </label>
+                                        <select id="ocType" class="hideOverflow" >
+                                            <option value="any">Choose One</option>
+                                            <option value="other">Other</option>
+                                            <option value="contract">Contract</option>
+                                        </select>
+                                        <label for="ocWorkDate">
+                                            Date
+                                        </label>
+                                        <input id="ocWorkDate" class="hideOverflow" type="date"  />
+                                        <label for="ocDesc">
+                                            Description
+                                        </label>
+                                        <input id="ocDesc" class="hideOverflow"  />
+                                        <label for="ocCost">
+                                            Cost
+                                        </label>
+                                        <input id="ocCost" type="number" class="hideOverflow"  step=".01" min="0" />
+                                        <button type="button" class="btn btn-primary"  style="margin-top: 10px;" onclick="addOC()">Add Cost</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-7" style="max-height: 500px;overflow: scroll;">
+                                <table class="table table-primary">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Date</th>
+                                            <th scope="col">Type</th>
+                                            <th scope="col">Description</th>
+                                            <th scope="col">Cost</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="bdyOC">
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row d-flex justify-content-center" style="padding-top:15px;">
+                            <button type="button" class="btn btn-success" onclick="switchScreen($('#link_woOtherContract')[0])">Next</button>
+                        </div>
+                    </div>
                 </div>
             </form>
         </div>
