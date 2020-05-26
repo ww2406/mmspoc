@@ -19,4 +19,5 @@ a.link-white {
 
 .hideOverflow {
     overflow:hidden;
+    width:100%;
 }

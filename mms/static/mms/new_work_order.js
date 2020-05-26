@@ -40,6 +40,22 @@ class Employee {
     }
 }
 
+class Equipment {
+    equipDesc="";
+    equipId=0;
+    equipCostCenter="";
+    meterType="";
+    equipRate=0.0;
+    
+    constructor(_equipDesc, _equipId,_equipCostCenter,_meterType,_equipRate) {
+        this.equipDesc=_equipDesc;
+        this.equipId=_equipId;
+        this.equipCostCenter=_equipCostCenter;
+        this.meterType=_meterType;
+        this.equipRate=_equipRate;
+    }
+}
+
 class Asset {
     type="";
     assetId="";
@@ -84,13 +100,23 @@ class Labor {
 
 class Equip {
     equipDt="";
-    equipType=0;
     equipDesc="";
     equipId=0;
+    equipCostCenter="";
     meterUsage=0.0;
     meterType="";
     equipRate=0.0;
     state="active";
+    
+    constructor(_equipDt,_equipDesc,_equipId,_equipCostCenter,_meterUsage,_meterType,_equipRate) {
+        this.equipDt=_equipDt;
+        this.equipDesc=_equipDesc;
+        this.equipId=_equipId;
+        this.equipCostCenter=_equipCostCenter;
+        this.meterUsage=_meterUsage;
+        this.meterType=_meterType;
+        this.equipRate=_equipRate;
+    }
 }
 
 class Material {
@@ -146,11 +172,22 @@ let employees=[new Employee("Matt Blankenship","D3 - RIC - CtyHq", 20.0),
     new Employee("Josh Thieman","CO - Ops - Permits",20.0),
     new Employee("Bill Welch","D4 - STA- CtyHQ", 20.0)];
 
+let equipment=[new Equipment("221 - PICKUP, 1/2 TON",2214100,"D4 - SUM - CtyHQ","miles",0.57),
+    new Equipment("221 - PICKUP, 1/2 TON",2216100,"D6 - FRA - Westerville","miles",0.57),
+    new Equipment("221 - PICKUP, 1/2 TON",2213100,"D3 - RIC - CtyHQ","miles",0.57),
+    new Equipment("254 - DUMP TRUCK, S&I, SINGLE AXLE, GVWR > 26000 LB",2544000,"D4 - SUM - CtyHQ","miles",3.6),
+    new Equipment("254 - DUMP TRUCK, S&I, SINGLE AXLE, GVWR > 26000 LB",2546002,"D6 - FRA - Westerville","miles",3.6),
+    new Equipment("254 - DUMP TRUCK, S&I, SINGLE AXLE, GVWR > 26000 LB",2543002,"D3 - RIC - CtyHQ","miles",3.6),
+    new Equipment("321 - BROOM, SELF-PROPELLED",3214000, "D4 - SUM - CtyHQ","hours",42.15),
+    new Equipment("321 - BROOM, SELF-PROPELLED",3216000, "D6 - FRA - Westerville","hours",42.15),
+    new Equipment("321 - BROOM, SELF-PROPELLED",3213000, "D3 - RIC - CtyHQ","hours",42.15)];
+
+
 let tcoreStructure={};
 
 let assets=[];
 let labor=[];
-let equip=[];
+let woEquip=[];
 let material=[];
 let otherContract=[];
 
@@ -162,7 +199,7 @@ function addLabor() {
                     </svg><br/><svg onclick="delLabor(${_idx})" class="bi bi-trash" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
                       <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
                       <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
-                    </svg>`
+                    </svg>`;
         let tr=document.createElement('tr');
         tr.setAttribute("scope","row");
         tr.setAttribute("lbIndex",_idx);
@@ -325,6 +362,178 @@ function calcHoursCalc() {
     document.querySelector("#modalEndDate").value="";
     document.querySelector("#modalEndTime").value="";
     $("#calcHours").modal('hide');
+}
+
+function eqSearch() {
+    document.querySelector("#bdyEqSelect").innerHTML="";
+    document.querySelector("#eqMessages").innerHTML="";
+    let eqTypeNum=document.querySelector("#eqSelType").value;
+    let eqCC=document.querySelector("#eqSelCC").value;
+    let eqId=document.querySelector("#eqSelId").value;
+    if (!eqTypeNum&&!eqCC&&!eqId) {
+        document.querySelector("#eqMessages").innerHTML="<p class='zoomInfoText'>Must enter search criteria</p>";
+    }
+    let results=null;
+    if (eqTypeNum) {
+        if(eqTypeNum!='any') {
+            results = equipment.filter(x => x.equipDesc.startsWith(eqTypeNum));
+        } else {
+            if(!eqId) {
+                document.querySelector("#eqMessages").innerHTML="<p class='zoomInfoText'>Must choose equip type</p>";
+                return;
+            } else {
+                //do nothing
+            }
+        }
+    }
+    if (eqCC) {
+        if(eqCC=='any') {
+            //do nothing
+        } else {
+            if(results) {
+                results=results.filter(x=>x.equipCostCenter==eqCC);
+            } else {
+                results=equipment.filter(x=>x.equipCostCenter==eqCC);
+            }
+        }
+    }
+    if (eqId) {
+        if(results) {
+            results=results.filter(x=>x.equipId==parseInt(eqId));
+        } else {
+            results=equipment.filter(x=>x.equipId==parseInt(eqId));
+        }
+    }
+    if (results==null) {
+        document.querySelector("#eqMessages").innerHTML="<p class='zoomInfoText'>No results. Try again.</p>";
+    } else {
+        results.forEach((elem,idx)=> {
+            let tr=document.createElement('tr');
+            let tdradio=document.createElement('td');
+            let radio=document.createElement('input');
+            radio.type='radio';
+            radio.name='eqId';
+            radio.id=`eqId${idx}`;
+            radio.value=elem.equipId;
+            tdradio.append(radio);
+            let tdequipid=document.createElement('td');
+            tdequipid.innerHTML=elem.equipId;
+            let tdcc=document.createElement('td');
+            tdcc.innerHTML=elem.equipCostCenter;
+            tr.append(tdradio,tdequipid,tdcc);
+            document.querySelector("#bdyEqSelect").append(tr);
+        });
+        $("input[name='eqId']").change((e)=> {
+            let equip=equipment.filter(x=>x.equipId==parseInt($("input[name='eqId']").val()))[0];
+            document.querySelector("#eqMeterLabel").innerHTML=equip.meterType;
+            if(equip.meterType=="hours") {
+                with(document.querySelector("#eqMeterUsage")) {
+                    max=24;
+                    min=0;
+                }
+            } else {
+                with(document.querySelector("#eqMeterUsage")) {
+                    min=0;
+                    max=600;
+                }
+            }
+        });
+    }
+}
+
+function eqClear() {
+    document.querySelector("#eqSelType").value="any";
+    document.querySelector("#eqSelCC").value="any";
+    document.querySelector("#eqSelId").value="";
+    document.querySelector("#bdyEqSelect").innerHTML="";
+}
+
+function addEquip() {
+    let eqId=null;
+    let workDate=null;
+    let meterUsage=null;
+    try {
+        eqId = document.querySelector("input[name='eqId']").value;
+        workDate = document.querySelector("#eqWorkDate").value;
+        meterUsage = document.querySelector("#eqMeterUsage").value;
+    } catch { }
+    if(!eqId||!workDate||!meterUsage) {
+        document.querySelector("#eqMessages").innerHTML="<p class='zoomInfoText'>Please choose an equipment item and enter a work date and meter usage.</p>";
+        return;
+    }
+    if(!document.querySelector("#eqMeterUsage").validity.valid) {
+        document.querySelector("#eqMessages").innerHTML="<p class='zoomInfoText'>Please correct the meter usage field.</p>";
+        return;
+    }
+    console.log(eqId);
+    eqId=parseInt(eqId);
+    console.log(meterUsage);
+    meterUsage=parseFloat(meterUsage);
+    let equipObj=equipment.filter(x=>x.equipId==eqId)[0];
+    let equip=new Equip(workDate,equipObj.equipDesc,eqId,equipObj.equipCostCenter,meterUsage,equipObj.meterType,equipObj.equipRate);
+    woEquip.push(equip);
+    let idx=woEquip.length-1;
+    let tr=document.createElement('tr');
+    tr.setAttribute("eqIndex",idx);
+    let tdDate=document.createElement('td');
+    let btns=`<svg onclick="editEquip(${idx})" class="bi bi-card-text" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
+                      <path fill-rule="evenodd" d="M14.5 3h-13a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
+                      <path fill-rule="evenodd" d="M3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8zm0 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"/>
+                    </svg><br/><svg onclick="delEquip(${idx})" class="bi bi-trash" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
+                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                      <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                    </svg>`;
+    tdDate.style.display='grid';
+    tdDate.style.gridTemplateColumns='1.1em 1fr';
+    tdDate.innerHTML="<div>"+btns+"</div><div style='display:flex;align-items:center;'><p style='margin-top: auto!important;; margin-bottom: auto!important;margin-left: 5px;'>"+workDate+"</p></div>";
+    let tdEquip=document.createElement('td');
+    tdEquip.innerHTML=equipObj.equipDesc+`<br/><span class='text-muted'>${equipObj.equipCostCenter}</span>`;
+    let tdUsage=document.createElement('td');
+    tdUsage.innerHTML=meterUsage;
+    let tdUnits=document.createElement('td');
+    tdUnits.innerHTML=equipObj.meterType;
+    tr.append(tdDate,tdEquip,tdUsage,tdUnits);
+    document.querySelector("#bdyEquip").append(tr);
+    $("#eqMessages").empty();
+    $("#eqSelType").val('any');
+    $("#eqSelCC").val('any');
+    $("#eqSelId").val('');
+    $("#bdyEqSelect").empty();
+    $("#eqWorkDate").val('');
+    $("#eqMeterUsage").val('');
+    $("#eqMeterLabel").text('');
+}
+
+function editEquip(idx) {
+    let addEquipResult=function() {
+        let tr=document.createElement('tr');
+        let tdradio=document.createElement('td');
+        let radio=document.createElement('input');
+        radio.type='radio';
+        radio.name='eqId';
+        radio.id=`eqId${idx}`;
+        radio.value=equip.equipId;
+        tdradio.append(radio);
+        let tdequipid=document.createElement('td');
+        tdequipid.innerHTML=equip.equipId;
+        let tdcc=document.createElement('td');
+        tdcc.innerHTML=equip.equipCostCenter;
+        tr.append(tdradio,tdequipid,tdcc);
+        document.querySelector("#bdyEqSelect").append(tr);
+    }
+    let equip=woEquip[idx];
+    console.log(equip);
+    addEquipResult();
+    document.querySelector("#eqWorkDate").value=equip.equipDt;
+    document.querySelector("#eqMeterUsage").value=parseFloat(equip.meterUsage);
+    document.querySelector("#eqMeterLabel").innerHTML=equip.meterType;
+    woEquip[idx].status="deleted";
+    delEquip(idx);
+}
+
+function delEquip(idx) {
+    woEquip[idx].state="deleted";
+    document.querySelector(`tr[eqIndex="${idx}"]`).remove();
 }
 
 function woDetailsItemSelect(elem,tcoreLevel) {
@@ -1066,5 +1275,19 @@ $(document).ready(()=> {
             });
             suggest(matches);
         }
+    });
+    let equipTypes=[...new Set(equipment.map(x=>x.equipDesc))];
+    equipTypes.forEach((eqtype)=>{
+        let elem=document.createElement('option');
+        elem.value=eqtype.substring(0,3);
+        elem.innerHTML=eqtype;
+        document.querySelector("#eqSelType").append(elem);
+    });
+    let equipCC=[...new Set(equipment.map(x=>x.equipCostCenter))];
+    equipCC.forEach((eqCC)=>{
+        let elem=document.createElement('option');
+        elem.value=eqCC;
+        elem.innerHTML=eqCC;
+        document.querySelector("#eqSelCC").append(elem);
     })
 });

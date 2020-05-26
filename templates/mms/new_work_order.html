@@ -224,7 +224,88 @@
                     </div>
                 </div>
                 <div id="woEquip" style="display: none;">
+                    <div class="container" id="equipContainer">
+                        <div class="row border-bottom" style="padding-bottom: 10px;">
+                            <div class="col-5">
+                                <div class="container" style="padding-top: 10px;">
+                                    <div class="row" id="eqMessages">
 
+                                    </div>
+                                    <div class="row d-flex flex-column">
+                                        <h4 class="text-black-50">Search Criteria</h4>
+                                        <label for="eqSelType">
+                                            Equipment Type
+                                        </label>
+                                        <select id="eqSelType" class="hideOverflow">
+                                            <option value="any">Choose one</option>
+                                        </select>
+                                        <label for="eqSelCC">
+                                            Cost Center
+                                        </label>
+                                        <select id="eqSelCC" class="hideOverflow">
+                                            <option value="any">Any</option>
+                                        </select>
+                                        <label for="eqSelId">
+                                            Equipment ID
+                                        </label>
+                                        <input id="eqSelId" class="hideOverflow" type="number" step="1" max="9999999" min="1000000" />
+                                        <div class="d-flex justify-content-around flex-row" style="margin-top:10px;">
+                                            <button type="button" class="btn btn-outline-primary" onclick="eqSearch()">Search</button>
+                                            <button type="button" class="btn btn-outline-danger" onclick="eqClear()">Clear</button>
+                                        </div>
+
+                                    </div>
+                                    <div class="row" style="margin-top:10px;">
+                                        <h4 class="text-black-50">Results</h4>
+                                        <table class="table" style="max-height: 245px;">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col"></th>
+                                                    <th scope="col">Equipment ID</th>
+                                                    <th scope="col">Cost Center</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="bdyEqSelect"></tbody>
+                                        </table>
+                                    </div>
+                                    <div class="row d-flex flex-column">
+                                        <h4 class="text-black-50">Work Info</h4>
+                                        <label for="eqWorkDate">
+                                            Date
+                                        </label>
+                                        <input id="eqWorkDate" type="date" class="hideOverflow" />
+                                        <label for="eqMeterUsage">
+                                            Meter Usage
+                                        </label>
+                                        <div class="d-flex flex-row align-items-center">
+                                            <input id="eqMeterUsage" type="number" class="hideOverflow" step="0.1" /><span id="eqMeterLabel"></span>
+                                        </div>
+                                    </div>
+                                    <div class="row d-flex justify-content-center" style="margin-top:10px;padding-top:10px;">
+                                        <button type="button" class="btn btn-primary" onclick="addEquip()">Add Equip</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-7" style="max-height: 500px;overflow: scroll;">
+                                <table class="table table-primary">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Date</th>
+                                            <th scope="col">Equipment</th>
+                                            <th scope="col">Usage</th>
+                                            <th scope="col">Units</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="bdyEquip">
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row d-flex justify-content-center" style="padding-top:15px;">
+                            <button type="button" class="btn btn-success" onclick="switchScreen($('#link_woMaterials')[0])">Next</button>
+                        </div>
+                    </div>
                 </div>
                 <div id="woMaterials" style="display: none;">
 
