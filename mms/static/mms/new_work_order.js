@@ -216,6 +216,25 @@ let woEquip=[];
 let woMaterials=[];
 let woOtherContract=[];
 
+function submitForm() {
+    let data={};
+    let woDetails = {
+        coreFunction: document.querySelector("input[name='grpTCoreFunctionAreaOption']:checked").getAttribute("tcoreCoreFunction"),
+        asset: document.querySelector("input[name='grpTCoreAssetOption']:checked").getAttribute("tcoreAsset"),
+        activity: document.querySelector("input[name='grpTCoreActivityOption']:checked").getAttribute("tcoreActivity"),
+        repairType: document.querySelector("input[name='grpTCoreRepairTypeOption']:checked").getAttribute("tcoreRepair")
+    };
+    data.woDetails = woDetails;
+    data.assets=assets.filter(x=>x.state=="active");
+    data.labor=labor.filter(x=>x.state=="active");
+    data.equip=woEquip.filter(x=>x.state=="active");
+    data.materials=woMaterials.filter(x=>x.state=="active");
+    data.otherContract=woOtherContract.filter(x=>x.state=="active");
+    jQuery.post("new",{"data":JSON.stringify(data)},(resp)=>{
+        console.log(resp);
+    });
+}
+
 function addLabor() {
     let createRow=function(_idx,_dt,_empl,_costcenter,_hours,_callback){
         let btns=`<svg onclick="editLabor(${_idx})" class="bi bi-card-text" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
@@ -449,7 +468,7 @@ function eqSearch() {
             document.querySelector("#bdyEqSelect").append(tr);
         });
         $("input[name='eqId']").change((e)=> {
-            let equip=equipment.filter(x=>x.equipId==parseInt($("input[name='eqId']").val()))[0];
+            let equip=equipment.filter(x=>x.equipId==parseInt($("input[name='eqId']:checked").val()))[0];
             document.querySelector("#eqMeterLabel").innerHTML=equip.meterType;
             if(equip.meterType=="hours") {
                 with(document.querySelector("#eqMeterUsage")) {
@@ -478,7 +497,7 @@ function addEquip() {
     let workDate=null;
     let meterUsage=null;
     try {
-        eqId = document.querySelector("input[name='eqId']").value;
+        eqId = document.querySelector("input[name='eqId']:checked").value;
         workDate = document.querySelector("#eqWorkDate").value;
         meterUsage = document.querySelector("#eqMeterUsage").value;
     } catch { }
@@ -495,6 +514,7 @@ function addEquip() {
     console.log(meterUsage);
     meterUsage=parseFloat(meterUsage);
     let equipObj=equipment.filter(x=>x.equipId==eqId)[0];
+    console.log(equipObj);
     let equip=new Equip(workDate,equipObj.equipDesc,eqId,equipObj.equipCostCenter,meterUsage,equipObj.meterType,equipObj.equipRate);
     woEquip.push(equip);
     let idx=woEquip.length-1;
@@ -563,7 +583,7 @@ function delEquip(idx) {
 
 function addMt() {
     document.querySelector("#mtMessages").innerHTML="";
-    let mtId=document.querySelector("input[name='mtId']").value;
+    let mtId=document.querySelector("input[name='mtId']:checked").value;
     let workDate=document.querySelector("#mtWorkDate").value;
     let qty=document.querySelector("#mtQtyUsed").value;
     if(!mtId||!workDate||!qty) {
@@ -640,7 +660,7 @@ function editMt(idx) {
     tr.append(tdradio,tdmtdesc);
     document.querySelector("#bdyMtSelect").append(tr);
     $("input[name='mtId']").change((e)=>{
-        let mtId=document.querySelector("input[name='mtId']").value;
+        let mtId=document.querySelector("input[name='mtId']:checked").value;
         let mtObj=materials.filter(x=>x.mtId==parseInt(mtId))[0];
         document.querySelector("#mtQtyUsedLabel").innerHTML=mtObj.mtUnits;
     });
@@ -1513,7 +1533,7 @@ $(document).ready(()=> {
             document.querySelector("#bdyMtSelect").append(tr);
         });
         $("input[name='mtId']").change((e)=>{
-            let mtId=document.querySelector("input[name='mtId']").value;
+            let mtId=document.querySelector("input[name='mtId']:checked").value;
             let mtObj=materials.filter(x=>x.mtId==parseInt(mtId))[0];
             document.querySelector("#mtQtyUsedLabel").innerHTML=mtObj.mtUnits;
         });
