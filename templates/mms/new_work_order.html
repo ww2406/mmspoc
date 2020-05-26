@@ -17,9 +17,9 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <a class="navbar-brand" href="#">ODOT MMS</a>
         <div class="navbar-nav mr-auto">
-            <a class="nav-item nav-link" href="#">My Open Work Orders</a>
-            <a class="nav-item nav-link" href="#">Recently Closed Work Orders</a>
-            <a class="nav-item nav-link" href="#">Search for a Work Order</a>
+            <a class="nav-item nav-link" href="#">Work Orders</a>
+            <a class="nav-item nav-link" href="#">Work Plan</a>
+            <a class="nav-item nav-link" href="#">Work Requests</a>
         </div>
         <form class="form-inline">
             <button class="btn btn-success" type="button">+ Work Order</button>
@@ -37,7 +37,8 @@
                     <a class="link-white" href="#" id="link_woLabor" onclick="switchScreen(this)">WO Labor</a> >
                     <a class="link-white" href="#" id="link_woEquip" onclick="switchScreen(this)">WO Equip</a> >
                     <a class="link-white" href="#" id="link_woMaterials" onclick="switchScreen(this)">WO Materials</a> >
-                    <a class="link-white" href="#" id="link_woOtherContract" onclick="switchScreen(this)">WO Other/Contract</a>
+                    <a class="link-white" href="#" id="link_woOtherContract" onclick="switchScreen(this)">WO Other/Contract</a> >
+                    <a class="link-white" href="#" id="link_woAccomplishments" onclick="switchScreen(this)">WO Accomplishments</a>
                 </div>
             </div>
             <form action= id="form1" onsubmit="return false;">
@@ -421,6 +422,52 @@
                                         </tr>
                                     </thead>
                                     <tbody id="bdyOC">
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row d-flex justify-content-center" style="padding-top:15px;">
+                            <button type="button" class="btn btn-success" onclick="switchScreen($('#link_woAccomplishments')[0])">Next</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="woAccomplishments" style="display: none;">
+                    <div class="container" id="accompContainer">
+                        <div class="row border-bottom" style="padding-bottom: 10px;">
+                            <div class="col-5">
+                                <div class="container" style="padding-top: 10px;">
+                                    <div class="row" id="accMessages">
+
+                                    </div>
+                                    <div id="ocInputFields" class="row d-flex flex-column">
+                                        <label for="accAsset">
+                                            Asset
+                                        </label>
+                                        <select id="accAsset" class="hideOverflow" >
+                                        </select>
+                                        <label for="accWorkDate">
+                                            Date
+                                        </label>
+                                        <input id="accWorkDate" class="hideOverflow" type="date"  />
+                                        <label for="accUnits">
+                                            Amount
+                                        </label>
+                                        <input id="accUnits" type="number" class="hideOverflow"  step=".1" min="0" />
+                                        <button type="button" class="btn btn-primary"  style="margin-top: 10px;" onclick="addOC()">Add Cost</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-7" style="max-height: 500px;overflow: scroll;">
+                                <table class="table table-primary">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Asset</th>
+                                            <th scope="col">Date</th>
+                                            <th scope="col">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="bdyAcc">
 
                                     </tbody>
                                 </table>

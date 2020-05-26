@@ -25,7 +25,7 @@ SECRET_KEY = '%r5rr93#pz7ruz03j78)kxl4&g6n9_v*lc50a)-4l14+ug9qhu'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -74,18 +74,32 @@ WSGI_APPLICATION = 'mmsproj.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'openmms',
-        'USER': 'openmms',
-        'PASSWORD': 'rPA8FN@5GuMkDRfuF04JYkY*l',
-        'HOST':'35.223.80.251',
-        'PORT':'5432',
-        'OPTIONS': {'sslmode': 'require'}
+if os.getenv('GAE_APPLICATION',None):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'openmms',
+            'USER': 'openmms',
+            'PASSWORD': 'rPA8FN@5GuMkDRfuF04JYkY*l',
+            # 'HOST':'35.223.80.251',
+            'HOST': '/cloudsql/openmms:us-central1:openmms-db',
+            'PORT': '5432'  # ,
+            # 'OPTIONS': {'sslmode': 'require'}
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.contrib.gis.db.backends.postgis',
+            'NAME': 'openmms',
+            'USER': 'openmms',
+            'PASSWORD': 'rPA8FN@5GuMkDRfuF04JYkY*l',
+            #'HOST':'35.223.80.251',
+            'HOST':'127.0.0.1',
+            'PORT':'5432'#,
+            #'OPTIONS': {'sslmode': 'require'}
+        }
+    }
 
 
 # Password validation
@@ -125,3 +139,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = 'static'

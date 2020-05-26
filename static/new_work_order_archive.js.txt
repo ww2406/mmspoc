@@ -1,0 +1,505 @@
+class TCOREActivity {
+    coreFunction="";
+    asset="";
+    activity="";
+    repairType="";
+    coreFunctionSafe="";
+    assetSafe="";
+    activitySafe="";
+    repairTypeSafe="";
+
+    constructor(_coreFunction,_asset,_activity,_repairType) {
+        this.coreFunction=_coreFunction;
+        this.asset=_asset;
+        this.activity=_activity;
+        this.repairType=_repairType;
+        this.coreFunctionSafe=TCOREActivity.makeSafe(this.coreFunction);
+        this.assetSafe=TCOREActivity.makeSafe(this.asset);
+        this.activitySafe=TCOREActivity.makeSafe(this.asset);
+        this.repairTypeSafe=TCOREActivity.makeSafe(this.asset);
+    }
+
+    static makeSafe(val) {
+        return val.replace(/[\/\-(\s)]/g,'');
+    }
+}
+let map="";
+let markers=null;
+let entryState="";
+let safety=[new TCOREActivity('Safety/Right-of-Way','Roadway (ROW)','Reconditioning Shoulders','Spot Berming'),
+    new TCOREActivity('Safety/Right-of-Way','Roadway (ROW)','Reconditioning Shoulders','Shoulder Betterment'),
+    new TCOREActivity('Safety/Right-of-Way','Roadway (ROW)','Reconditioning Shoulders','Long Line Berming'),
+    new TCOREActivity('Safety/Right-of-Way','Roadway (ROW)','Reconditioning Shoulders','Cut and Remove'),
+    new TCOREActivity('Safety/Right-of-Way','Pavement Markings','Pavement Marking','Long Line'),
+    new TCOREActivity('Safety/Right-of-Way','Pavement Markings','Pavement Marking','Auxiliary'),
+    new TCOREActivity('Safety/Right-of-Way','Pavement Markings','Pavement Marking','Inspection'),
+    new TCOREActivity('Safety/Right-of-Way','Pavement Markings','Raised Pavement Markers','Normal')];
+let drainage=[new TCOREActivity('Drainage','Drainage Structures','Repair/Replace','Masonry'),
+    new TCOREActivity('Drainage','Drainage Structures','Repair/Replace','Drainage Structure Repair/Replace'),
+    new TCOREActivity('Drainage','Drainage Structures','Repair/Replace','Curb and Gutter'),
+    new TCOREActivity('Drainage','Drainage Structures','Cleaning','Cleaning Drainage Structures')];
+let pavement=[new TCOREActivity('Pavement','Pavement','Concrete Pavement Repairs','Slab Replacement'),
+    new TCOREActivity('Pavement','Pavement','Concrete Pavement Repairs','Slab Spot Repair'),
+    new TCOREActivity('Pavement','Pavement','Concrete Pavement Repairs','Full Depth Repair (subbase work required)')];
+let bridges=[new TCOREActivity('Bridges','Bridges','Sweeping','Normal'),
+    new TCOREActivity('Bridges','Bridges','Cleaning','Normal'),
+    new TCOREActivity('Bridges','Bridges','Sealing','Deck Sealing'),
+    new TCOREActivity('Bridges','Bridges','Sealing','Substructure')]
+let tcore=[...safety,...drainage,...pavement,...bridges];
+
+let tcoreStructure={};
+
+function updateWODetailsCoreFunction(text) {
+    $("#titleTCoreFunctionArea").text(`Core Function Area: ${text}`);
+    if(Object.keys(tcoreStructure.coreFunctions[text].assets).length==1) {
+        $("#titleTCoreAsset").text(`Asset: ${Object.keys(tcoreStructure.coreFunctions[text].assets)[0]}`);
+        updateWODetailsAssetBoxes(text,true);
+    } else {
+        $("#titleTCoreAsset").text('Asset');
+        updateWODetailsAssetBoxes(text,false);
+    }
+}
+
+function updateWODetailsAsset(source) {
+    let coreFunc=$(source).attr('coreFunc');
+    let asset=$(source).attr('asset');
+    if(Object.keys(tcoreStructure.coreFunctions[coreFunc].assets[asset]).length==1) {
+        $("#titleTCoreActivity").text(`Activity: ${Object.keys(tcoreStructure.coreFunctions[coreFunc].assets[asset])[0]}`);
+        updateWODetailsActivityBoxes(coreFunc,asset,true);
+    } else {
+        $("#titleTCoreActivity").text('Activity');
+        updateWODetailsActivityBoxes(coreFunc,asset,false);
+    }
+}
+
+function updateWODetailsActivity(text) {
+    updateWODetailsActivityBoxes()
+}
+
+function updateWODetailsAssetBoxes(coreFunc,selectedItem) {
+    $("#grpTCoreAsset").empty();
+    for(asset in tcoreStructure.coreFunctions[coreFunc].assets) {
+       let alreadyExists = $("#grpTCoreAsset #grpTCoreAssetOption"+TCOREActivity.makeSafe(coreFunc)).length>0;
+       if(!alreadyExists){
+           if(selectedItem) {
+               $("#grpTCoreAsset").append(
+                   "<label class=\"btn btn-secondary active\" style='margin: 5px;'>"+
+                   "    <input name='grpTCoreAssetOption' id='grpTCoreAssetOption"+TCOREActivity.makeSafe(coreFunc)+TCOREActivity.makeSafe(asset)+"' type='radio' checked='checked' autocomplete='off' onchange='updateWODetailsAsset(this)' coreFunc='"+coreFunc+"' asset='"+asset+"'>"+asset +
+                   "</label>"
+               );
+           } else {
+               $("#grpTCoreAsset").append(
+                   "<label class=\"btn btn-secondary active\" style='margin: 5px;'>"+
+                   "    <input name='grpTCoreAssetOption' id='grpTCoreAssetOption"+TCOREActivity.makeSafe(coreFunc)+TCOREActivity.makeSafe(asset)+"' type='radio' autocomplete='off' onchange='updateWODetailsAsset(this)' coreFunc='"+coreFunc+"' asset='"+asset+"'>"+asset +
+                   "</label>"
+               );
+           }
+       }
+    }
+}
+
+function updateWODetailsActivityBoxes(coreFunc,asset,selectedItem) {
+    $("#grpTCoreActivity").empty();
+    for(asset in tcoreStructure.coreFunctions[coreFunc].assets) {
+       let alreadyExists = $("#grpTCoreActivity #grpTCoreActivityOption"+TCOREActivity.makeSafe(coreFunc)+TCOREActivity.makeSafe(asset)).length>0;
+       if(!alreadyExists){
+           if(selectedItem) {
+               $("#grpTCoreActivity").append(
+                   "<label class=\"btn btn-secondary active\" style='margin: 5px;'>"+
+                   "    <input name='grpTCoreActivityOption' id='grpTCoreActivityOption"+TCOREActivity.makeSafe(coreFunc)+TCOREActivity.makeSafe(asset)+"' type='radio' checked='checked' autocomplete='off' onchange='updateWODetailsActivity(\""+coreFunc+"\")'>"+asset +
+                   "</label>"
+               );
+           } else {
+               $("#grpTCoreActivity").append(
+                   "<label class=\"btn btn-secondary active\" style='margin: 5px;'>"+
+                   "    <input name='grpTCoreActivityOption' id='grpTCoreActivityOption"+TCOREActivity.makeSafe(coreFunc)+TCOREActivity.makeSafe(asset)+"' type='radio' autocomplete='off' onchange='updateWODetailsActivity(\""+coreFunc+"\")'>"+asset +
+                   "</label>"
+               );
+           }
+       }
+    }
+}
+
+function switchScreen(link) {
+    let pages=["woAssets","woDetails","woLabor","woEquip","woMaterials","woOtherContract"]
+    let elemid="#"+link.id.split('_')[1];
+    $(link)[0].style.fontWeight="bold";
+    $(elemid)[0].style.display='';
+    let page=[elemid.substring(1,elemid.length)];
+    pages.filter(x=>!page.includes(x)).forEach((elem)=>{
+        $("#link_"+elem)[0].style.fontWeight='normal';
+        $("#"+elem)[0].style.display='none';
+    });
+}
+
+function clearAsset() {
+    $("#linearID").val("");
+    $("#linearLogBegin").val("");
+    $("#linearLogEnd").val("");
+    if ($("#assetType").val()=="roadway") {
+        map.removeLayer(markers);
+        markers.clearLayers();
+    }
+}
+
+function assetTypeChange() {
+    if($("#linearID").length>0){
+        $("#linearID").val("");
+        $("#linearLogBegin").val("");
+        $("#linearLogEnd").val("");
+    }
+    map.removeLayer(markers);
+    markers.clearLayers();
+    updateMapAssets();
+}
+
+function updateMapAssets() {
+    switch($("#assetType").val()){
+        case "culvert":
+            map.removeLayer(markers);
+            markers.clearLayers();
+            fetchCulverts();
+            $("#entryContainer").empty();
+            entryState="point";
+            break;
+        case "barrier":
+            map.removeLayer(markers);
+            markers.clearLayers();
+            fetchBarriers();
+            addLinearEntry();
+            entryState="linear";
+            $("#lbl_linearID").text("Barrier File Number");
+            break;
+        case "roadway":
+            if (map.getZoom()<16) {
+                $("#zoomInfoText").text("Zoom closer to more accurately choose a route.")
+            } else {
+                $("#zoomInfoText").text("");
+            }
+            addLinearEntry();
+            entryState="linear";
+            $("#lbl_linearID").text("NLFID");
+            break;
+    }
+}
+
+function addLinearEntry(){
+    if(entryState!="linear"){
+            $("#templinearEntry .row").each((idx,elem)=>{
+            $(elem).clone().appendTo("#entryContainer");
+        });
+        $("#entryContainer [futureid]").each((idx,elem)=>{
+            elem.id=$(elem).attr("futureid");
+            $(elem).css("width","100%");
+        });
+    }
+}
+
+function fetchCulverts(){
+    if(map.getZoom()>=12){
+        $("#zoomInfoText").text("");
+        let bounds=map.getBounds();
+        let ne=[bounds.getNorthEast().lng,bounds.getNorthEast().lat];
+        let nw=[bounds.getNorthWest().lng,bounds.getNorthWest().lat];
+        let sw=[bounds.getSouthWest().lng,bounds.getSouthWest().lat];
+        let se=[bounds.getSouthEast().lng,bounds.getSouthEast().lat];
+        let data={};
+        data.geometryType="esriGeometryPolygon";
+        //data.geometry=`{"rings":[[[${ne.toString()}],[${nw.toString()}],[${sw.toString()}],[${se.toString()}]]],"spatialReference":{"wkid":4326}}`;
+        geometry={};
+        geometry.rings=[[ne,nw,sw,se]];
+        geometry.spatialReference={wkid:4326};
+        data.geometry=JSON.stringify(geometry);
+        data.spatialRel="esriSpatialRelIntersects";
+        data.inputSR=4326;
+        data.outSR=4326;
+        data.f="geojson";
+        data.outFields="CULVERT_FILE_NUMBER";
+        jQuery.post("https://gis.dot.state.oh.us/arcgis/rest/services/TIMS/Assets/MapServer/4/query",data,(resp)=>{
+            L.geoJSON(resp.features).addTo(markers);
+            markers.eachLayer((layers)=> {
+                layers.eachLayer((layer)=>{
+                    layer.options.title="CFN "+layer.feature.properties.CULVERT_FILE_NUMBER;
+                    layer.bindPopup("CFN "+layer.feature.properties.CULVERT_FILE_NUMBER);
+                });
+            });
+            map.addLayer(markers);
+        });
+    } else {
+        $("#zoomInfoText").text("Zoom in closer to see culverts.");
+    }
+}
+
+function fetchBarriers() {
+    if(map.getZoom()>=15){
+        $("#zoomInfoText").text("");
+        let bounds=map.getBounds();
+        let ne=[bounds.getNorthEast().lng,bounds.getNorthEast().lat];
+        let nw=[bounds.getNorthWest().lng,bounds.getNorthWest().lat];
+        let sw=[bounds.getSouthWest().lng,bounds.getSouthWest().lat];
+        let se=[bounds.getSouthEast().lng,bounds.getSouthEast().lat];
+        let data={};
+        data.where="STATUS='A'"
+        data.geometryType="esriGeometryPolygon";
+        //data.geometry=`{"rings":[[[${ne.toString()}],[${nw.toString()}],[${sw.toString()}],[${se.toString()}]]],"spatialReference":{"wkid":4326}}`;
+        geometry={};
+        geometry.rings=[[ne,nw,sw,se]];
+        geometry.spatialReference={wkid:4326};
+        data.geometry=JSON.stringify(geometry);
+        data.spatialRel="esriSpatialRelIntersects";
+        data.inputSR=4326;
+        data.outSR=4326;
+        data.f="geojson";
+        data.outFields="BARRIER_FILE_NUMBER,CTL_BEGIN_NBR,CTL_END_NBR,NLFID";
+        jQuery.post("https://gis.dot.state.oh.us/arcgis/rest/services/TIMS/Assets/MapServer/15/query",data,(resp)=>{
+            L.geoJSON(resp.features).addTo(markers);
+            markers.eachLayer((layers)=> {
+                layers.eachLayer((layer)=>{
+                    layer.options.title="BFN "+layer.feature.properties.BARRIER_FILE_NUMBER;
+                    layer.bindPopup("BFN "+layer.feature.properties.BARRIER_FILE_NUMBER);
+                    layer.on("click",barrierClick);
+                });
+            });
+            map.addLayer(markers);
+        });
+    } else {
+        $("#zoomInfoText").text("Zoom in closer to see barriers.");
+    }
+}
+
+function barrierClick(barrier) {
+    if($("#linearID").val()==""){
+        $("#linearID").val(barrier.target.feature.properties.BARRIER_FILE_NUMBER);
+/*        $("#linearLogBegin").attr('min',Math.floor(barrier.target.feature.properties.CTL_BEGIN_NBR*100)/100);
+        $("#linearLogBegin").attr('max',Math.ceil(barrier.target.feature.properties.CTL_END_NBR*100)/100);
+        $("#linearLogEnd").attr('min',Math.floor(barrier.target.feature.properties.CTL_BEGIN_NBR*100)/100);
+        $("#linearLogEnd").attr('max',Math.ceil(barrier.target.feature.properties.CTL_END_NBR*100)/100);*/
+    } else {
+        barrier.target.togglePopup();
+        //barrier.target.unbindPopup();
+        if (barrier.target.feature.properties.BARRIER_FILE_NUMBER!=$("#linearID").val()) {
+            return;
+        }
+        // LRSConnect(barrier.latlng.lat,barrier.latlng.lng,"logpoint").then((logpoint)=>{
+        //     updateLogpoints(logpoint.logpoint);
+        // });
+        data={};
+        data.x=barrier.latlng.lng;
+        data.y=barrier.latlng.lat;
+        data.routeId=barrier.target.feature.properties.NLFID;
+        data.inSR=4326;
+        data.tolerance=25;
+        data.f="json";
+        jQuery.post("http://gis.dot.state.oh.us/arcgis/rest/services/TIMS/LRS/MapServer/exts/OdotLrsTools/CountyMeasureAtPoint",
+            data,
+            (resp)=>{
+                let logpoint=resp.features[0].attributes.LogPoint;
+                updateLogpoints(logpoint);
+
+        });
+    }
+}
+
+function replaceBeginLogpoint() {
+    $("#linearLogBegin").val(parseFloat($("#modalLogpoint").val()));
+    $("#chooseLogpoint").modal('hide');
+}
+
+function replaceEndLogpoint() {
+    $("#linearLogEnd").val(parseFloat($("#modalLogpoint").val()));
+    $("#chooseLogpoint").modal('hide');
+}
+
+// async function LRSConnect(lat,lng,mode){
+//     if(mode=="minmax"){
+//         data={};
+//         data.x=lng
+//         data.y=lat;
+//         data.inSR=4326;
+//         data.tolerance=25;
+//         data.f="json";
+//         let data2a={};
+//         await jQuery.post("http://gis.dot.state.oh.us/arcgis/rest/services/TIMS/LRS/MapServer/exts/OdotLrsTools/CountyMeasureAtPoint",
+//             data,
+//             (resp)=> {
+//                 data2a.routeId = resp.features[0].attributes.NLFID;
+//                 data2a.fromMeasure = resp.features[0].attributes.MMin;
+//                 data2a.toMeasure = resp.features[0].attributes.MMax;
+//                 data2a.outSR = 4326;
+//                 data2a.f = "json";
+//         })
+//         return data2a;
+//     } else if (mode=="logpoint") {
+//             data={};
+//             data.x=lng
+//             data.y=lat;
+//             data.inSR=4326;
+//             data.tolerance=25;
+//             data.f="json";
+//             let data2 = {};
+//             await jQuery.post("http://gis.dot.state.oh.us/arcgis/rest/services/TIMS/LRS/MapServer/exts/OdotLrsTools/CountyMeasureAtPoint",
+//                 data,
+//                 (resp)=> {
+//                     data2.routeId = resp.features[0].attributes.NLFID;
+//                     data2.logpoint = resp.features[0].attributes.LogPoint;
+//                     data2.fromMeasure = resp.features[0].attributes.MMin;
+//                     data2.toMeasure = resp.features[0].attributes.MMax;
+//             });
+//             return data2;
+//     }
+// }
+
+function roadwayClick(road) {
+    console.log("roadwayClick");
+    //e.target.feature.properties
+    let data={};
+    data.x=road.latlng.lng;
+    data.y=road.latlng.lat;
+    data.routeId=road.layer.feature.properties.NLFID;
+    data.inSR=4326;
+    data.tolerance=25;
+    data.f="json";
+    jQuery.post("http://gis.dot.state.oh.us/arcgis/rest/services/TIMS/LRS/MapServer/exts/OdotLrsTools/CountyMeasureAtPoint",
+        data,
+        (resp)=> {
+            let logpoint=resp.features[0].attributes.LogPoint;
+            updateLogpoints(logpoint);
+    });
+}
+
+function mapClick(e) {
+    let roadwayupdate=function() {
+        if($("#linearID").val()==""){
+            markers.clearLayers();
+            map.removeLayer(markers);
+            //let data2= await LRSConnect(e.latlng.lat,e.latlng.lng,"minmax");
+            data={};
+            data.x=e.latlng.lng;
+            data.y=e.latlng.lat;
+            data.inSR=4326;
+            data.tolerance=25;
+            data.f="json";
+            jQuery.post("http://gis.dot.state.oh.us/arcgis/rest/services/TIMS/LRS/MapServer/exts/OdotLrsTools/CountyMeasureAtPoint",
+                data,
+                (resp)=>{
+                    $("#linearID").val(resp.features[0].attributes.NLFID);
+                    let data2={};
+                    data2.routeId=resp.features[0].attributes.NLFID;
+                    data2.fromMeasure=resp.features[0].attributes.MMin;
+                    data2.toMeasure=resp.features[0].attributes.MMax;
+                    data2.outSR=4326;
+                    data2.f="json";
+                     jQuery.post("http://gis.dot.state.oh.us/arcgis/rest/services/TIMS/LRS/MapServer/exts/OdotDynSegTools/CountyRouteBetweenMs",
+                        data2,
+                        (resp2)=>{
+                            let geo_json={};
+                            geo_json.type="Feature";
+                            geo_json.geometry={};
+                            geo_json.geometry.type="LineString";
+                            geo_json.geometry.coordinates=[];
+                            geo_json.properties={};
+                            geo_json.properties.NLFID=resp2.features[0].attributes.NLFID;
+                            geo_json.properties.LogMin=resp2.features[0].attributes.MMin;
+                            geo_json.properties.LogMax=resp2.features[0].attributes.MMax;
+                            $("#linearLogBegin").attr('min',Math.floor(resp2.features[0].attributes.MMin*100)/100);
+                            $("#linearLogBegin").attr('max',Math.ceil(resp2.features[0].attributes.MMax*100)/100);
+                            $("#linearLogEnd").attr('min',Math.floor(resp2.features[0].attributes.MMin*100)/100);
+                            $("#linearLogEnd").attr('max',Math.ceil(resp2.features[0].attributes.MMax*100)/100);
+                            resp2.features[0].geometry.paths.forEach((path)=>{
+                                geo_json.geometry.coordinates.push(...path);
+                            });
+                            L.geoJSON(geo_json).addTo(markers);
+                            markers.eachLayer((layer)=>{
+                                layer.on("click",roadwayClick);
+                            });
+                            markers.addTo(map);
+                        });
+            });
+        } else {
+            //e.target.feature.properties
+            // let data={};
+            // data.x=e.latlng.lng;
+            // data.y=e.latlng.lat;
+            // data.routeId=e.target.feature.properties.NLFID;
+            // data.inSR=4326;
+            // data.tolerance=25;
+            // data.f="json";
+            // jQuery.post("http://gis.dot.state.oh.us/arcgis/rest/services/TIMS/LRS/MapServer/exts/OdotLrsTools/CountyMeasureAtPoint",
+            //     data,
+            //     (resp)=> {
+            //         let logpoint=resp.features[0].attributes.LogPoint;
+            //         updateLogpoints(logpoint);
+            // });
+        }
+    };
+    switch($("#assetType").val()){
+        case "roadway":
+            roadwayupdate();
+            break;
+    }
+}
+
+function updateLogpoints(logpoint) {
+    if ($("#linearLogBegin").val()==""&&$("#linearLogEnd").val()=="") {
+        $("#linearLogBegin").val(Math.round(logpoint*100)/100);
+    } else if ($("#linearLogBegin").val()!=""&&$("#linearLogEnd").val()=="") {
+        $("#linearLogEnd").val(Math.round(logpoint*100)/100);
+    } else {
+        $("#modalLogpoint").val(Math.round(logpoint*100)/100);
+        $("#chooseLogpoint").modal();
+    }
+}
+
+$(document).ready(()=> {
+    map=L.map('mapid').setView([40.331489,-82.350477],7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    map.on('moveend',updateMapAssets);
+    map.on('zoomend',updateMapAssets);
+    map.on('click',mapClick);
+    markers=L.layerGroup();
+    updateMapAssets();
+    $("#bdyTCoreFunctionArea").append(
+       "<div id=\"grpTCoreFunctionArea\" class=\"container btn-group-toggle\" data-toggle=\"buttons\"></div>"
+    );
+    $("#bdyTCoreAsset").append(
+       "<div id=\"grpTCoreAsset\" class=\"container btn-group-toggle\" data-toggle=\"buttons\"></div>"
+    );
+    tcoreCoreFunctions=[...new Set(tcore.map(x=>x.coreFunction))];
+    tcoreStructure.coreFunctions={};
+    tcoreCoreFunctions.forEach((coreFunc)=> {
+       let obj={};
+       obj.coreFunc=coreFunc;
+       let relAssets=tcore.filter(x=>x.coreFunction==coreFunc);
+       //obj.assets={}
+       relAssets=[...new Set(relAssets.map((z)=>z.asset))];
+       obj.assets={}
+       relAssets.forEach((asset,assetIndex)=>{
+           obj.assets[asset]={}
+           let relActivities=tcore.filter(x=>x.coreFunction==coreFunc&&x.asset==asset);
+           relActivities=[...new Set(relActivities.map((z)=>z.activity))];
+           obj.assets[asset].activities={}
+           relActivities.forEach((activity)=>{
+               obj.assets[asset].activities[activity]={};
+               let relRepairs=tcore.filter(x=>x.coreFunction==coreFunc&&x.asset==asset&&x.activity==activity);
+               relRepairs=[...new Set(relRepairs.map((z)=>z.repairType))];
+               obj.assets[asset].activities[activity].repairs={};
+               relRepairs.forEach((repair)=>{
+                   obj.assets[asset].activities[activity].repairs[repair]={};
+               });
+           });
+       });
+       tcoreStructure.coreFunctions[coreFunc]=obj;
+    });
+    tcore.forEach((activity) => {
+       let alreadyExists = $("#grpTCoreFunctionArea #grpTCoreFunctionAreaOption"+activity.coreFunctionSafe).length>0;
+       if(!alreadyExists){
+           $("#grpTCoreFunctionArea").append(
+               "<label class=\"btn btn-secondary active\" style='margin: 5px;'>"+
+               "    <input name='grpTCoreFunctionAreaOption' id='grpTCoreFunctionAreaOption"+activity.coreFunctionSafe+"' type='radio' autocomplete='off' onchange='updateWODetailsCoreFunction(\""+activity.coreFunction+"\")'>"+activity.coreFunction +
+               "</label>"
+           );
+       }
+    });
+});

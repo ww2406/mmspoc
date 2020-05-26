@@ -1,0 +1,23 @@
+a.link-white {
+    color: white;
+    text-decoration: none;
+    border-bottom: white 1px solid;
+}
+
+.slight-inset {
+    padding-top:5px;
+    padding-bottom:5px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.zoomInfoText {
+    color:red;
+    text-align: center;
+    width:100%;
+}
+
+.hideOverflow {
+    overflow:hidden;
+    width:100%;
+}
