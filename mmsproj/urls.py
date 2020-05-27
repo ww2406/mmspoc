@@ -19,7 +19,8 @@ from mms import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('mms/',views.index,name='root'),
-    path('mms/index', views.index, name='index'),
-    path('mms/wo/new', views.newWorkOrder,name='newWO')
+    path('mms/',views.WOListView.as_view(),name='root'),
+    path('mms/index', views.WOListView.as_view(), name='index'),
+    path('mms/wo/new', views.newWorkOrder,name='newWO'),
+    path('mms/projectsAPI',views.projectsAPI,name='projectsAPI')
 ]

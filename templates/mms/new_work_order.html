@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>New Work Order</title>
     {% load static %}
     <link href="{% static 'mms/bootstrap.min.css' %}" type="text/css" rel="stylesheet" />
     {% load static %}
@@ -15,9 +15,9 @@
     <link href="{% static 'mms/auto-complete.css' %}" type="text/css" rel="stylesheet" />
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <a class="navbar-brand" href="#">ODOT MMS</a>
+        <a class="navbar-brand" href="/mms">ODOT MMS</a>
         <div class="navbar-nav mr-auto">
-            <a class="nav-item nav-link" href="#">Work Orders</a>
+            <a class="nav-item nav-link active" href="#">Work Orders</a>
             <a class="nav-item nav-link" href="#">Work Plan</a>
             <a class="nav-item nav-link" href="#">Work Requests</a>
         </div>
@@ -92,53 +92,81 @@
                     </div>
                 </div>
                 <div id="woDetails" style="display: none;">
-                    <div id="woDetailsAccordion">
-                        <div class="card">
-                            <div class="card-header" id="hdrTCoreFunctionArea">
-                                <h5 class="mb-0">
-                                    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#bdyTCoreFunctionArea" id="titleTCoreFunctionArea">
-                                        Core Function Area
-                                    </button>
-                                </h5>
+                    <div id="woDetailsContainer" class="d-flex flex-column">
+                        <div id="woDetailsAccordion">
+                            <div class="card">
+                                <div class="card-header" id="hdrTCoreFunctionArea">
+                                    <h5 class="mb-0">
+                                        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#bdyTCoreFunctionArea" id="titleTCoreFunctionArea">
+                                            Core Function Area
+                                        </button>
+                                    </h5>
+                                </div>
+                                <div id="bdyTCoreFunctionArea" class="collapse show" data-parent="#woDetailsAccordion">
+                                    <div id="grpTCoreFunctionArea" class="container btn-group btn-group-toggle" data-toggle="buttons"></div>
+                                </div>
                             </div>
-                            <div id="bdyTCoreFunctionArea" class="collapse show" data-parent="#woDetailsAccordion">
-                                <div id="grpTCoreFunctionArea" class="container btn-group btn-group-toggle" data-toggle="buttons"></div>
+                            <div class="card">
+                                <div class="card-header" id="hdrTCoreAsset">
+                                    <h5 class="mb-0">
+                                        <button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#bdyTCoreAsset" id="titleTCoreAsset">
+                                            Asset
+                                        </button>
+                                    </h5>
+                                </div>
+                                <div id="bdyTCoreAsset" class="collapse" data-parent="#woDetailsAccordion">
+                                    <div id="grpTCoreAsset" class="container btn-group btn-group-toggle" data-toggle="buttons"></div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header" id="hdrTCoreActivity">
+                                    <h5 class="mb-0">
+                                        <button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#bdyTCoreActivity" id="titleTCoreActivity">
+                                            Activity
+                                        </button>
+                                    </h5>
+                                </div>
+                                <div id="bdyTCoreActivity" class="collapse" data-parent="#woDetailsAccordion">
+                                    <div id="grpTCoreActivity" class="container btn-group btn-group-toggle" data-toggle="buttons"></div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header" id="hdrTCoreRepairType">
+                                    <h5 class="mb-0">
+                                        <button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#bdyTCoreRepairType" id="titleTCoreRepairType">
+                                            Repair Type
+                                        </button>
+                                    </h5>
+                                </div>
+                                <div id="bdyTCoreRepairType" class="collapse" data-parent="#woDetailsAccordion">
+                                    <div id="grpTCoreRepairType" class="container btn-group btn-group-toggle" data-toggle="buttons"></div>
+                                </div>
                             </div>
                         </div>
-                        <div class="card">
-                            <div class="card-header" id="hdrTCoreAsset">
-                                <h5 class="mb-0">
-                                    <button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#bdyTCoreAsset" id="titleTCoreAsset">
-                                        Asset
-                                    </button>
-                                </h5>
-                            </div>
-                            <div id="bdyTCoreAsset" class="collapse" data-parent="#woDetailsAccordion">
-                                <div id="grpTCoreAsset" class="container btn-group btn-group-toggle" data-toggle="buttons"></div>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-header" id="hdrTCoreActivity">
-                                <h5 class="mb-0">
-                                    <button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#bdyTCoreActivity" id="titleTCoreActivity">
-                                        Activity
-                                    </button>
-                                </h5>
-                            </div>
-                            <div id="bdyTCoreActivity" class="collapse" data-parent="#woDetailsAccordion">
-                                <div id="grpTCoreActivity" class="container btn-group btn-group-toggle" data-toggle="buttons"></div>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-header" id="hdrTCoreRepairType">
-                                <h5 class="mb-0">
-                                    <button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#bdyTCoreRepairType" id="titleTCoreRepairType">
-                                        Repair Type
-                                    </button>
-                                </h5>
-                            </div>
-                            <div id="bdyTCoreRepairType" class="collapse" data-parent="#woDetailsAccordion">
-                                <div id="grpTCoreRepairType" class="container btn-group btn-group-toggle" data-toggle="buttons"></div>
+                        <div id="projDiv" class="d-flex flex-column" style="margin-top: 10px;">
+                            <label for="woProject">
+                                <h4>Project</h4>
+                            </label>
+                            <input id="woProject" type="text" />
+                            <p>for this POC only:</p>
+                            <div class="d-flex flex-row justify-content-around" style="width: 100%">
+                                <label for="woProjectDist">
+                                    Project District
+                                </label>
+                                <select id="woProjectDist">
+                                    <option value="D3">D3</option>
+                                    <option value="D4">D4</option>
+                                    <option value="D6">D6</option>
+                                </select>
+                                <label for="woProjectCty">
+                                    Project County
+                                </label>
+                                <select id="woProjectCty">
+                                    <option dist="X" value="DW">None</option>
+                                    <option dist="D6" value="FRA" style="display: none;">Franklin</option>
+                                    <option dist="D3" value="RIC">Richland</option>
+                                    <option dist="D4" value="SUM" style="display: none;">Summit</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -440,21 +468,24 @@
                                     <div class="row" id="accMessages">
 
                                     </div>
-                                    <div id="ocInputFields" class="row d-flex flex-column">
+                                    <div id="accInputFields" class="row d-flex flex-column">
                                         <label for="accAsset">
                                             Asset
                                         </label>
                                         <select id="accAsset" class="hideOverflow" >
+                                            <option value="any">Choose one...</option>
                                         </select>
                                         <label for="accWorkDate">
                                             Date
                                         </label>
                                         <input id="accWorkDate" class="hideOverflow" type="date"  />
-                                        <label for="accUnits">
+                                        <label for="accAmount">
                                             Amount
                                         </label>
-                                        <input id="accUnits" type="number" class="hideOverflow"  step=".1" min="0" />
-                                        <button type="button" class="btn btn-primary"  style="margin-top: 10px;" onclick="addOC()">Add Cost</button>
+                                        <input id="accAmount" type="number" class="hideOverflow"  step=".1" min="0" />
+                                        <div class="d-flex justify-content-center">
+                                            <button type="button" class="btn btn-primary"  style="margin-top: 10px;" onclick="addAcc()">Add Accomplishment</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -462,8 +493,8 @@
                                 <table class="table table-primary">
                                     <thead>
                                         <tr>
-                                            <th scope="col">Asset</th>
                                             <th scope="col">Date</th>
+                                            <th scope="col">Asset</th>
                                             <th scope="col">Amount</th>
                                         </tr>
                                     </thead>

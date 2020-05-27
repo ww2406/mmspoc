@@ -23,7 +23,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '%r5rr93#pz7ruz03j78)kxl4&g6n9_v*lc50a)-4l14+ug9qhu'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if os.getenv('GAE_APPLICATION',None):
+    DEBUG = False
+else:
+    DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -90,7 +93,7 @@ if os.getenv('GAE_APPLICATION',None):
 else:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.contrib.gis.db.backends.postgis',
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': 'openmms',
             'USER': 'openmms',
             'PASSWORD': 'rPA8FN@5GuMkDRfuF04JYkY*l',

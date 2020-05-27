@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>ODOT MMS</title>
     {% load static %}
     <script src="{% static 'mms/jquery-3.5.1.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
@@ -15,15 +15,48 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <a class="navbar-brand" href="#">ODOT MMS</a>
+        <a class="navbar-brand" href="/mms">ODOT MMS</a>
         <div class="navbar-nav mr-auto">
-            <a class="nav-item nav-link active" href="#">My Open Work Orders</a>
-            <a class="nav-item nav-link" href="#">Recently Closed Work Orders</a>
-            <a class="nav-item nav-link" href="#">Search for a Work Order</a>
+            <a class="nav-item nav-link active" href="#">Work Orders</a>
+            <a class="nav-item nav-link" href="#">Work Plan</a>
+            <a class="nav-item nav-link" href="#">Work Requests</a>
         </div>
         <form class="form-inline">
-            <button class="btn btn-success">+ Work Order</button>
+            <button type="button" class="btn btn-success" onclick="window.location.href='/mms/wo/new'">+ Work Order</button>
         </form>
     </nav>
+    <div style="padding:10px">
+        <h1>Work Orders</h1>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">WO Number</th>
+                    <th scope="col">Cost Center</th>
+                    <th scope="col">Project</th>
+                    <th scope="col">Activity</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if WorkOrder_list %}
+                {% for wo in WorkOrder_list %}
+                <tr>
+                    <td>{{ wo.id }}</td>
+                    <td>{{ wo.costCenter }}</td>
+                    {% if wo.project.projectName %}
+                    <td>{{ wo.project.district }} - {{ wo.project.county }} - {{ wo.project.projectName }}</td>
+                    {% else %}
+                    <td></td>
+                    {% endif %}
+                    <td>{{ wo.tcoreCoreFunction }} - {{ wo.tcoreAsset }} - {{ wo.tcoreActivity }} - {{ wo.tcoreRepairType }}</td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="4">No records.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>

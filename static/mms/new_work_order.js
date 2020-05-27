@@ -233,6 +233,7 @@ function submitForm() {
     jQuery.post("new",{"data":JSON.stringify(data)},(resp)=>{
         console.log(resp);
     });
+    console.log('test');
 }
 
 function addLabor() {
@@ -1332,7 +1333,7 @@ async function LRSConnect(lat,lng,mode){
         data.tolerance=25;
         data.f="json";
         let data2a={};
-        await jQuery.post("http://gis.dot.state.oh.us/arcgis/rest/services/TIMS/LRS/MapServer/exts/OdotLrsTools/CountyMeasureAtPoint",
+        await jQuery.post("https://gis.dot.state.oh.us/arcgis/rest/services/TIMS/LRS/MapServer/exts/OdotLrsTools/CountyMeasureAtPoint",
             data,
             (resp)=> {
                 data2a.routeId = resp.features[0].attributes.NLFID;
@@ -1350,7 +1351,7 @@ async function LRSConnect(lat,lng,mode){
             data.tolerance=25;
             data.f="json";
             let data2 = {};
-            await jQuery.post("http://gis.dot.state.oh.us/arcgis/rest/services/TIMS/LRS/MapServer/exts/OdotLrsTools/CountyMeasureAtPoint",
+            await jQuery.post("https://gis.dot.state.oh.us/arcgis/rest/services/TIMS/LRS/MapServer/exts/OdotLrsTools/CountyMeasureAtPoint",
                 data,
                 (resp)=> {
                     data2.routeId = resp.features[0].attributes.NLFID;
@@ -1372,7 +1373,7 @@ function roadwayClick(road) {
     data.inSR=4326;
     data.tolerance=25;
     data.f="json";
-    jQuery.post("http://gis.dot.state.oh.us/arcgis/rest/services/TIMS/LRS/MapServer/exts/OdotLrsTools/CountyMeasureAtPoint",
+    jQuery.post("https://gis.dot.state.oh.us/arcgis/rest/services/TIMS/LRS/MapServer/exts/OdotLrsTools/CountyMeasureAtPoint",
         data,
         (resp)=> {
             road.layer.feature.properties.LogPoint=resp.features[0].attributes.LogPoint;
@@ -1387,7 +1388,7 @@ function mapClick(e,mode) {
             map.removeLayer(markers);
             let data2= await LRSConnect(e.latlng.lat,e.latlng.lng,"minmax");
             $("#linearID").val(data2.routeId);
-            jQuery.post("http://gis.dot.state.oh.us/arcgis/rest/services/TIMS/LRS/MapServer/exts/OdotDynSegTools/CountyRouteBetweenMs",
+            jQuery.post("https://gis.dot.state.oh.us/arcgis/rest/services/TIMS/LRS/MapServer/exts/OdotDynSegTools/CountyRouteBetweenMs",
                 data2,
                 (resp2)=>{
                     let geo_json={};

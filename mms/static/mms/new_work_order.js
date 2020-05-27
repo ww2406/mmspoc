@@ -155,6 +155,21 @@ class OtherContract {
     }
 }
 
+class Accomplishment {
+    accAssetType="";
+    accAssetIdentifier=""
+    accWorkDate="";
+    accAmount=0.0;
+    state="active";
+    
+    constructor(_accAssetType="",_accAssetIdentifier="",_accWorkDate="",_accAmount=0.0) {
+        this.accAssetType=_accAssetType;
+        this.accAssetIdentifier=_accAssetIdentifier;
+        this.accWorkDate=_accWorkDate;
+        this.accAmount=_accAmount;
+    }
+}
+
 let map="";
 let markers=null;
 let entryState="";
@@ -215,23 +230,40 @@ let labor=[];
 let woEquip=[];
 let woMaterials=[];
 let woOtherContract=[];
+let woAccomplishments=[];
 
 function submitForm() {
     let data={};
-    let woDetails = {
+    data.woDetails = {
         coreFunction: document.querySelector("input[name='grpTCoreFunctionAreaOption']:checked").getAttribute("tcoreCoreFunction"),
         asset: document.querySelector("input[name='grpTCoreAssetOption']:checked").getAttribute("tcoreAsset"),
         activity: document.querySelector("input[name='grpTCoreActivityOption']:checked").getAttribute("tcoreActivity"),
         repairType: document.querySelector("input[name='grpTCoreRepairTypeOption']:checked").getAttribute("tcoreRepair")
     };
-    data.woDetails = woDetails;
-    data.assets=assets.filter(x=>x.state=="active");
-    data.labor=labor.filter(x=>x.state=="active");
-    data.equip=woEquip.filter(x=>x.state=="active");
-    data.materials=woMaterials.filter(x=>x.state=="active");
-    data.otherContract=woOtherContract.filter(x=>x.state=="active");
+    data.assets=assets.filter(x=>x.state==="active");
+    data.labor=labor.filter(x=>x.state==="active");
+    data.equip=woEquip.filter(x=>x.state==="active");
+    data.materials=woMaterials.filter(x=>x.state==="active");
+    data.otherContract=woOtherContract.filter(x=>x.state==="active");
+    data.accomplishments=woAccomplishments.filter(x=>x.state==="active");
+    data.woProject={};
+    try {
+        projName="";
+        document.querySelector("#woProject").value.split(' - ').forEach((elem,idx)=>{
+            if(idx>=2){
+                projName+=elem;
+            }
+        });
+        if(!projName){
+            projName=document.querySelector("#woProject").value;
+        }
+        data.woProject={"projectName": projName,
+            "district":document.querySelector("#woProjectDist").value,
+            "county":document.querySelector("#woProjectCty").value};
+    } catch { }
     jQuery.post("new",{"data":JSON.stringify(data)},(resp)=>{
         console.log(resp);
+        window.location.href="/mms/index";
     });
 }
 
@@ -746,6 +778,77 @@ function delOC(idx) {
     document.querySelector(`tr[ocIndex='${idx}']`).remove();
 }
 
+function addAcc() {
+    document.querySelector("#accMessages").innerHTML="";
+    let workDate=document.querySelector("#accWorkDate").value;
+    let asset=document.querySelector("#accAsset").value;
+    let amt=document.querySelector("#accAmount").value;
+    if(!asset||asset==='any'||!amt||!workDate){
+        document.querySelector("#accMessages").innerHTML+="<p class='zoomInfoText'>All fields are required.</p>";
+    }
+    if(!document.querySelector("#accAmount").validity.valid) {
+        document.querySelector("#accMessages").innerHTML+="<p class='zoomInfoText'>Amount must be greater than 0</p>";
+    }
+    if (document.querySelector("#accMessages").innerHTML!="") {
+        return;
+    }
+    amt=parseFloat(amt);
+    asset=parseInt(asset);
+    let assetObj=assets[asset];
+    let accObj=new Accomplishment(assetObj.type,assetObj.assetId,workDate,amt);
+    woAccomplishments.push(accObj);
+    let idx=woAccomplishments.length-1;
+
+    let tr=document.createElement('tr');
+    tr.setAttribute("accIndex",idx);
+    let tdDate=document.createElement('td');
+    let btns=`<svg onclick="editAcc(${idx})" class="bi bi-card-text" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
+                      <path fill-rule="evenodd" d="M14.5 3h-13a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
+                      <path fill-rule="evenodd" d="M3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8zm0 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"/>
+                    </svg><br/><svg onclick="delAcc(${idx})" class="bi bi-trash" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
+                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                      <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                    </svg>`;
+    tdDate.style.display='grid';
+    tdDate.style.gridTemplateColumns='1.1em 1fr';
+    tdDate.innerHTML="<div>"+btns+"</div><div style='display:flex;align-items:center;'><p style='margin-top: auto!important;; margin-bottom: auto!important;margin-left: 5px;'>"+workDate+"</p></div>";
+    let tdAsset=document.createElement('td');
+    tdAsset.style.verticalAlign="middle";
+    tdAsset.innerHTML=assets[asset].type.substring(0,1).toUpperCase()+assets[asset].type.substring(1,assets[asset].type.length)+" "+assets[asset].assetId;
+    let tdAmt=document.createElement('td');
+    tdAmt.innerHTML=amt;
+    tdAmt.style.verticalAlign="middle";
+    tr.append(tdDate,tdAsset,tdAmt);
+    document.querySelector("#bdyAcc").append(tr);
+    
+    document.querySelectorAll("#accInputFields input").forEach((elem)=>{
+        elem.value='';
+    });
+    document.querySelectorAll("#accInputFields select").forEach((elem)=> {
+        elem.value='any';
+    });
+    document.querySelector("#accMessages").innerHTML="";
+}
+
+function editAcc(idx) {
+    let accObj=woAccomplishments[idx];
+    document.querySelectorAll("#accInputFields input").forEach((elem)=>{
+        elem.value='';
+    });
+    document.querySelectorAll("#accInputFields select").forEach((elem)=> {
+        elem.value='any';
+    });
+    document.querySelector("#accAsset").value=accObj.accAsset;
+    document.querySelector("#accWorkDate").value=accObj.accWorkDate;
+    document.querySelector("#accAmount").value=accObj.accAmount;
+    delAcc(idx);
+}
+
+function delAcc(idx) {
+    woAccomplishments[idx].state='deleted';
+    document.querySelector(`tr[accIndex='${idx}']`).remove();
+}
+
 function woDetailsItemSelect(elem,tcoreLevel) {
     if($(elem).attr("tcoreLevel")=="coreFunction"){
         $("#woDetails #woDetailsNextDiv").remove();
@@ -843,7 +946,7 @@ function woDetailsItemSelect(elem,tcoreLevel) {
             $(nextbtn).addClass("btn");
             $(nextbtn).addClass("btn-success")
             $(newdiv).append(nextbtn);
-            $("#woDetails").append(newdiv);
+            $("#woDetailsContainer").append(newdiv);
         }
     }
 }
@@ -942,11 +1045,20 @@ function switchScreen(link) {
     document.querySelector("#secHeader").innerHTML=`<h2>${titles[elemnoid].title}</h2>`;
     if(elemnoid=="woAccomplishments") {
         document.querySelector("#accAsset").innerHTML="";
-        assets.filter(x=>x.state=="active").forEach((asset,idx)=>{
+        let anyOption=document.createElement('option');
+        anyOption.value='any';
+        anyOption.innerHTML='Choose one...';
+        document.querySelector("#accAsset").append(anyOption);
+        assets.filter(x=>x.state=="active").forEach((asset)=>{
+            let idx=assets.indexOf(asset);
             let option=document.createElement('option');
             option.value=idx;
             console.log(idx);
-            option.innerHTML=asset.type.substring(0,1).toUpperCase()+asset.type.substring(1,asset.length) + " " + asset.assetId;
+            let assetBase=asset.type.substring(0,1).toUpperCase()+asset.type.substring(1,asset.length) + " " + asset.assetId;
+            if (asset.type=="barrier"||asset.type=="roadway") {
+                assetBase+=" "+asset.logBegin+"-"+asset.logEnd;
+            }
+            option.innerHTML=assetBase;
             document.querySelector("#accAsset").append(option);
         });
     }
@@ -1534,6 +1646,17 @@ $(document).ready(()=> {
             suggest(matches);
         }
     });
+    let projComplete=new autoComplete({
+        selector: '#woProject',
+        minChars: 2,
+        source: (term,response)=> {
+            $.getJSON('/mms/projectsAPI',{text:term},(data)=>{
+                console.log(data);
+                let out=data.map(x=>x.fields.district+" - " +x.fields.county+" - "+x.fields.projectName)
+                response(out);
+            });
+        }
+    });
     let equipTypes=[...new Set(equipment.map(x=>x.equipDesc))];
     equipTypes.forEach((eqtype)=>{
         let elem=document.createElement('option');
@@ -1578,5 +1701,10 @@ $(document).ready(()=> {
     });
     document.querySelectorAll("input[type='date']").forEach((elem)=>{
         elem.max=moment().format().split('T')[0];
+    });
+    $("#woProjectDist").change((e)=>{
+        $(`#woProjectCty option[dist!='${$("#woProjectDist").val()}']`).css('display','none');
+        $(`#woProjectCty option[dist='${$("#woProjectDist").val()}']`).css('display','');
+        $(`#woProjectCty option[dist='X']`).css('display','');
     });
 });
