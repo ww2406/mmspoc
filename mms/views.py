@@ -13,6 +13,7 @@ class WOListView(generic.ListView):
     model = WorkOrder
     template_name = 'mms/index.html'
     context_object_name = 'WorkOrder_list'
+    paginate_by = 10
 
 def index(request):
     return render(request, 'mms/index.html')
